@@ -5,149 +5,243 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
+  Dimensions,
   ScrollView,
+  Image,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import { AntDesign } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { Colors } from "@/constants/Colors";
 
-const SignupScreen = ({ navigation }: any) => {
-  const [name, setName] = useState("");
+const { width } = Dimensions.get("window");
+
+const SignUpScreen = () => {
+  const [profilePic, setProfilePic] = useState(null);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [month, setMonth] = useState("");
+  const [day, setDay] = useState("");
+  const [year, setYear] = useState("");
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
 
-  const handleSignup = () => {
-    console.log("Signup with:", name, email, password);
+  const handleSignUp = () => {
+    console.log("Sign up pressed");
+    router.push("/(auth)/add-number");
+  };
+
+  const handleLogin = () => {
+    router.push("/(auth)/login");
+  };
+
+  const handleProfilePicSelect = () => {
+    console.log("Select profile pic");
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <LinearGradient
-        colors={[Colors.light.primary, Colors.light.background]}
-        style={styles.gradient}
-      />
-      <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <View style={styles.formContainer}>
-          <Text style={styles.title}>Create Account</Text>
-          <Text style={styles.subtitle}>Sign up to get started</Text>
-
-          <TextInput
-            style={styles.input}
-            placeholder="Full Name"
-            value={name}
-            onChangeText={setName}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Confirm Password"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            secureTextEntry
-          />
-
-          <TouchableOpacity style={styles.signupButton} onPress={handleSignup}>
-            <Text style={styles.signupButtonText}>Sign Up</Text>
-          </TouchableOpacity>
-
-          <View style={styles.loginContainer}>
-            <Text style={styles.loginText}>Already have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-              <Text style={styles.loginLink}>Log In</Text>
-            </TouchableOpacity>
+    <ScrollView style={styles.container}>
+      <TouchableOpacity
+        style={styles.profilePicContainer}
+        onPress={handleProfilePicSelect}
+      >
+        {profilePic ? (
+          <Image source={{ uri: profilePic }} style={styles.profilePic} />
+        ) : (
+          <View style={styles.profilePicPlaceholder}>
+            <AntDesign name="camerao" size={40} color={Colors.light.primary} />
+            <Text style={styles.profilePicText}>Add Photo</Text>
           </View>
+        )}
+      </TouchableOpacity>
+
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="First Name"
+          value={firstName}
+          onChangeText={setFirstName}
+        />
+      </View>
+
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Last Name"
+          value={lastName}
+          onChangeText={setLastName}
+        />
+      </View>
+
+      <Text style={styles.birthdayLabel}>Birthday</Text>
+      <View style={styles.birthdayContainer}>
+        <TextInput
+          style={[styles.input, styles.birthdayInput]}
+          placeholder="MM"
+          value={month}
+          onChangeText={setMonth}
+          keyboardType="number-pad"
+          maxLength={2}
+        />
+        <TextInput
+          style={[styles.input, styles.birthdayInput]}
+          placeholder="DD"
+          value={day}
+          onChangeText={setDay}
+          keyboardType="number-pad"
+          maxLength={2}
+        />
+        <TextInput
+          style={[styles.input, styles.birthdayInput]}
+          placeholder="YYYY"
+          value={year}
+          onChangeText={setYear}
+          keyboardType="number-pad"
+          maxLength={4}
+        />
+      </View>
+
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+        />
+      </View>
+
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
+      </View>
+
+      <TouchableOpacity
+        style={styles.termsContainer}
+        onPress={() => setAgreeToTerms(!agreeToTerms)}
+      >
+        <View style={styles.checkbox}>
+          {agreeToTerms && <AntDesign name="check" size={16} color={Colors.light.primary} />}
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        <Text style={styles.termsText}>
+          I agree to the Terms and Conditions
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.signUpButton}
+        onPress={handleSignUp}
+        disabled={!agreeToTerms}
+      >
+        <Text style={styles.signUpButtonText}>CONTINUE</Text>
+      </TouchableOpacity>
+
+      <View style={styles.loginContainer}>
+        <Text style={styles.loginText}>Already have an account? </Text>
+        <TouchableOpacity onPress={handleLogin}>
+          <Text style={styles.loginLink}>Login</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.background,
-  },
-  gradient: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    top: 0,
-    height: "100%",
-  },
-  scrollViewContent: {
-    flexGrow: 1,
-    justifyContent: "center",
-  },
-  formContainer: {
     padding: 20,
+    backgroundColor: "#fff",
   },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: Colors.light.text,
-    marginBottom: 10,
-    textAlign: "center",
+  profilePicContainer: {
+    alignItems: "center",
+    marginBottom: 20,
   },
-  subtitle: {
-    fontSize: 16,
-    color: Colors.light.subText,
-    marginBottom: 30,
-    textAlign: "center",
+  profilePic: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
   },
-  input: {
-    width: "100%",
-    height: 50,
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
-    borderRadius: 10,
-    paddingHorizontal: 15,
-    marginBottom: 15,
-    fontSize: 16,
-  },
-  signupButton: {
-    width: "100%",
-    height: 50,
-    backgroundColor: Colors.light.primary,
-    borderRadius: 10,
+  profilePicPlaceholder: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: "#f0f0f0",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 10,
-    marginBottom: 20,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
   },
-  signupButtonText: {
-    color: "white",
-    fontSize: 18,
+  profilePicText: {
+    marginTop: 5,
+    color: Colors.light.primary,
     fontWeight: "bold",
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  input: {
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.light.primary,
+    paddingVertical: 10,
+    fontSize: 16,
+  },
+  birthdayLabel: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 5,
+    color: "#555",
+  },
+  birthdayContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
+  birthdayInput: {
+    width: width * 0.25,
+  },
+  termsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderWidth: 1,
+    borderColor: Colors.light.primary,
+    marginRight: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  termsText: {
+    color: "#555",
+  },
+  signUpButton: {
+    backgroundColor: Colors.light.primary,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+  },
+  signUpButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
   },
   loginContainer: {
     flexDirection: "row",
     justifyContent: "center",
+    marginTop: 20,
   },
   loginText: {
-    color: Colors.light.text,
+    color: "#555",
     fontSize: 14,
   },
   loginLink: {
@@ -157,4 +251,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SignupScreen;
+export default SignUpScreen;

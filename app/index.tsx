@@ -3,7 +3,7 @@ import { Dimensions, Image, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Button from "@/components/Button";
 import { Colors } from "@/constants/Colors";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 
 const LandingScreen = () => {
   return (
@@ -31,10 +31,16 @@ const LandingScreen = () => {
           </Text>
         </View>
         <View style={styles.buttonContainer}>
-          <Button text="Let's get started" />
+          <Button
+            text="Let's get started"
+            onPress={() => router.push("/(drawer)/notifications")}
+          />
         </View>
         <Text style={styles.alreadyHaveAccountText}>
-          Already have an account? <Text style={styles.signIn}><Link href={"/(auth)"}>Sign in</Link></Text>
+          Already have an account?{" "}
+          <Text style={styles.signIn}>
+            <Link href={"/(auth)"}>Sign in</Link>
+          </Text>
         </Text>
       </View>
     </View>
