@@ -1,17 +1,20 @@
 import { Drawer } from "expo-router/drawer";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React, { useEffect } from "react";
 import { DrawerContentScrollView, DrawerItem } from "@react-navigation/drawer";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router, usePathname } from "expo-router";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { Colors } from "@/constants/Colors";
+import CustomDrawerItem from "@/components/CustomDrawerItem";
 
 const CustomDrawerContent = (props: any) => {
   const pathname = usePathname();
+
   useEffect(() => {
     console.log(pathname);
   }, [pathname]);
+
   return (
     <DrawerContentScrollView {...props}>
       <View>
@@ -30,158 +33,41 @@ const CustomDrawerContent = (props: any) => {
           <Text style={styles.email}>eriddeveloper@gmail.com</Text>
         </View>
       </View>
-      <DrawerItem
-        label={"Home"}
-        labelStyle={[
-          { marginLeft: -20, fontSize: 18 },
-          { color: pathname === "/home" ? Colors.light.primary : "#7e7e7e" },
-        ]}
-        icon={({ color, size }) => (
-          <Ionicons
-            name="home"
-            color={pathname === "/home" ? Colors.light.primary : "#7e7e7e"}
-            size={24}
-          />
-        )}
-        style={{ backgroundColor: pathname === "/home" ? "#C5C6D0" : "#fff" }}
-        onPress={() => router.push("/home")}
+
+      <CustomDrawerItem
+        label="Home"
+        icon={<Ionicons name="home-outline" size={16} />}
+        pathName="home"
       />
-      <DrawerItem
-        label={"My Account"}
-        labelStyle={[
-          { marginLeft: -20, fontSize: 18 },
-          {
-            color:
-              pathname === "/my-account" ? Colors.light.primary : "#7e7e7e",
-          },
-        ]}
-        icon={({ color, size }) => (
-          <Ionicons
-            name="person-outline"
-            color={
-              pathname === "/my-account" ? Colors.light.primary : "#7e7e7e"
-            }
-            size={24}
-          />
-        )}
-        style={{
-          backgroundColor: pathname === "/my-account" ? "#C5C6D0" : "#fff",
-        }}
-        onPress={() => router.push("/my-account")}
+      <CustomDrawerItem
+        label="My Account"
+        icon={<Ionicons name="person-outline" size={16} />}
+        pathName="(my-account)"
       />
-      <DrawerItem
-        label={"Notifications"}
-        labelStyle={[
-          { marginLeft: -20, fontSize: 18 },
-          {
-            color:
-              pathname === "/notifications" ? Colors.light.primary : "#7e7e7e",
-          },
-        ]}
-        icon={({ color, size }) => (
-          <Ionicons
-            name="notifications"
-            color={
-              pathname === "/notifications" ? Colors.light.primary : "#7e7e7e"
-            }
-            size={24}
-          />
-        )}
-        style={{
-          backgroundColor: pathname === "/notifications" ? "#C5C6D0" : "#fff",
-        }}
-        onPress={() => router.push("/notifications")}
+      <CustomDrawerItem
+        label="Notifications"
+        icon={<Ionicons name="notifications-outline" size={16} />}
+        pathName="notifications"
       />
-      <DrawerItem
-        label={"Order History"}
-        labelStyle={[
-          { marginLeft: -20, fontSize: 18 },
-          {
-            color:
-              pathname === "/order-history" ? Colors.light.primary : "#7e7e7e",
-          },
-        ]}
-        icon={({ color, size }) => (
-          <MaterialCommunityIcons
-            name="history"
-            color={
-              pathname === "/order-history" ? Colors.light.primary : "#7e7e7e"
-            }
-            size={24}
-          />
-        )}
-        style={{
-          backgroundColor: pathname === "/order-history" ? "#C5C6D0" : "#fff",
-        }}
-        onPress={() => router.push("/order-history")}
+      <CustomDrawerItem
+        label="Order History"
+        icon={<MaterialCommunityIcons name="history" size={16} />}
+        pathName="order-history"
       />
-      <DrawerItem
-        label={"Featured Products"}
-        labelStyle={[
-          { marginLeft: -20, fontSize: 18 },
-          {
-            color:
-              pathname === "/featured-products"
-                ? Colors.light.primary
-                : "#7e7e7e",
-          },
-        ]}
-        icon={({ color, size }) => (
-          <AntDesign
-            name="Safety"
-            color={
-              pathname === "/featured-products"
-                ? Colors.light.primary
-                : "#7e7e7e"
-            }
-            size={24}
-          />
-        )}
-        style={{
-          backgroundColor:
-            pathname === "/featured-products" ? "#C5C6D0" : "#fff",
-        }}
-        onPress={() => router.push("/featured-products")}
+      <CustomDrawerItem
+        label="Featured Products"
+        icon={<AntDesign name="Safety" size={16} />}
+        pathName="featured-products"
       />
-      <DrawerItem
-        label={"Wishlist"}
-        labelStyle={[
-          { marginLeft: -20, fontSize: 18 },
-          {
-            color: pathname === "/wishlist" ? Colors.light.primary : "#7e7e7e",
-          },
-        ]}
-        icon={({ color, size }) => (
-          <Ionicons
-            name="heart-outline"
-            color={pathname === "/wishlist" ? Colors.light.primary : "#7e7e7e"}
-            size={24}
-          />
-        )}
-        style={{
-          backgroundColor: pathname === "/wishlist" ? "#C5C6D0" : "#fff",
-        }}
-        onPress={() => router.push("/wishlist")}
+      <CustomDrawerItem
+        label="Wishlist"
+        icon={<Ionicons name="heart-outline" size={16} />}
+        pathName="wishlist"
       />
-      <DrawerItem
-        label={"Settings"}
-        labelStyle={[
-          { marginLeft: -20, fontSize: 18 },
-          {
-            color: pathname === "/settings" ? Colors.light.primary : "#7e7e7e",
-          },
-        ]}
-        icon={({ color, size }) => (
-          <Ionicons
-            name="settings"
-            color={pathname === "/settings" ? Colors.light.primary : "#7e7e7e"}
-            size={24}
-          />
-        )}
-        style={{
-          backgroundColor: pathname === "/settings" ? "#C5C6D0" : "#fff",
-        }}
-        onPress={() => router.push("/settings")}
+      <CustomDrawerItem
+        label="Settings"
+        icon={<Ionicons name="settings-outline" size={16} />}
+        pathName="settings"
       />
     </DrawerContentScrollView>
   );
@@ -203,12 +89,31 @@ const DrawerLayout = () => {
         headerTitleAlign: "center",
       }}
     >
-      <Drawer.Screen name="notifications" options={{ headerShown: true }} />
+      <Drawer.Screen
+        name="notifications"
+        options={{
+          headerShown: true,
+          title: "NOTIFICATIONS",
+          headerRight: () => (
+            <View>
+              <TouchableOpacity style={styles.clearAllContainer}>
+                <Text style={styles.clearAllText}>CLEAR ALL</Text>
+              </TouchableOpacity>
+            </View>
+          ),
+        }}
+      />
       <Drawer.Screen name="featured-products" options={{ headerShown: true }} />
-      <Drawer.Screen name="my-account" options={{ headerShown: true }} />
-      <Drawer.Screen name="order-history" options={{ headerShown: true }} />
+      <Drawer.Screen name="(my-account)" options={{ headerShown: false }} />
+      <Drawer.Screen
+        name="order-history"
+        options={{ headerShown: true, title: "ORDER HISTORY" }}
+      />
       <Drawer.Screen name="settings" options={{ headerShown: true }} />
-      <Drawer.Screen name="wishlist" options={{ headerShown: true }} />
+      <Drawer.Screen
+        name="wishlist"
+        options={{ headerShown: true, title: "WISHLIST" }}
+      />
     </Drawer>
   );
 };
@@ -233,4 +138,16 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   emailContainer: { marginBottom: 20, marginTop: 5 },
+  clearAllContainer: {
+    backgroundColor: "#fff",
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    marginRight: 10,
+    borderRadius: 5,
+  },
+  clearAllText: {
+    color: "darkblue",
+    fontSize: 10,
+    fontWeight: "bold",
+  },
 });

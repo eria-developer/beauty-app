@@ -7,7 +7,6 @@ import {
   StyleSheet,
   Dimensions,
   ScrollView,
-  Image,
 } from "react-native";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { router } from "expo-router";
@@ -34,13 +33,8 @@ const LoginScreen = ({ navigation }: any) => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.logoContainer}>
-        <Image
-          style={styles.image}
-          source={{
-            uri: "https://img.freepik.com/free-photo/collection-cosmetics-bottles-jars_23-2147787926.jpg?t=st=1724882715~exp=1724886315~hmac=70721a00a1147314e9fd218b51b0b5de690adc978d85a075bec8af25c2850ab4&w=740",
-          }}
-        />
-        <Text style={styles.logoText}>GLOW MART</Text>
+        <FontAwesome name="coffee" size={80} color={Colors.light.primary }/>
+        <Text style={styles.logoText}>CJ's</Text>
       </View>
 
       <View style={styles.inputContainer}>
@@ -146,11 +140,6 @@ const styles = StyleSheet.create({
     color: Colors.light.primary,
     fontSize: 14,
     fontWeight: "bold",
-  },
-  image: {
-    height: 200,
-    width: "100%",
-    borderRadius: 10,
   },
 });
 

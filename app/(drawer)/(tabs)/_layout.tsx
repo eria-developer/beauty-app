@@ -7,7 +7,6 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { DrawerToggleButton } from "@react-navigation/drawer";
-
 // import { Colors } from "@/constants/Colors";
 
 export default function TabLayout() {
@@ -42,23 +41,14 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="add-service"
-        options={{
-          title: "Add Service",
-          tabBarIcon: ({ color, focused }) => (
-            <Feather name="plus" color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="order"
         options={{
-          title: "Order",
+          title: "Menu",
           tabBarIcon: ({ color, focused }) => (
             <MaterialCommunityIcons
               name="food-fork-drink"
               size={24}
-              color="black"
+              color={color}
             />
           ),
         }}
@@ -68,7 +58,17 @@ export default function TabLayout() {
         options={{
           title: "Rewards",
           tabBarIcon: ({ color, focused }) => (
-            <FontAwesome5 name="medal" size={24} color="black" />
+            <FontAwesome5 name="medal" size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="(more)"
+        options={{
+          headerShown: false,
+          title: "More",
+          tabBarIcon: ({ color, focused }) => (
+            <Feather name="more-horizontal" color={color} size={28} />
           ),
         }}
       />

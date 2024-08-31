@@ -1,102 +1,159 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Image, Platform } from 'react-native';
+import HowItWorksComponent from "@/components/HowItWorksComponent";
+import React from "react";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { Colors } from "@/constants/Colors";
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-
-export default function TabTwoScreen() {
+const RewardsScreen = () => {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={<Ionicons size={310} name="code-slash" style={styles.headerImage} />}>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user's current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText> library
-          to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <SafeAreaView style={styles.container}>
+      <ScrollView>
+        <View style={styles.welcomeCard}>
+          <Text style={styles.welcomeTitle}>Welcome to</Text>
+          <Text style={styles.rewardsTitle}>Rewards</Text>
+          <Text style={styles.welcomeDescription}>
+            Introducing Rewards! Our way to say "Thank you" for using our app.
+          </Text>
+        </View>
+
+        <View style={styles.pointsCard}>
+          <Text style={styles.pointsTitle}>Points Earned</Text>
+          <Text style={styles.pointsCount}>0 / 10,00,000</Text>
+          <View style={styles.progressBar} />
+        </View>
+
+        <View>
+          <View style={styles.howItWorksTitleContainer}>
+            <Text style={styles.sectionTitle}>How it works</Text>
+          </View>
+
+          <HowItWorksComponent
+            title="Earn Points"
+            description="You can Earn Points on every order."
+            icon={
+              <MaterialCommunityIcons
+                name="cash-check"
+                size={18}
+                color={Colors.light.rearText}
+              />
+            }
+          />
+
+          <HowItWorksComponent
+            title="Validity of Points"
+            description=" Points credited has an expiry of 1 year from the date that is
+              credited."
+            icon={
+              <MaterialCommunityIcons
+                name="clock-time-eight-outline"
+                size={18}
+                color={Colors.light.rearText}
+              />
+            }
+          />
+
+          <HowItWorksComponent
+            title="Points Transfer"
+            description=" Earned reward points cannot be transferred to any third party."
+            icon={
+              <MaterialCommunityIcons
+                name="account-switch-outline"
+                size={18}
+                color={Colors.light.rearText}
+              />
+            }
+          />
+
+          <HowItWorksComponent
+            title="Redeem Points"
+            description="On CART before Check out, You can enter the points you want to
+                redeem."
+            icon={
+              <MaterialCommunityIcons
+                name="shopping-outline"
+                size={18}
+                color={Colors.light.rearText}
+              />
+            }
+          />
+
+          <HowItWorksComponent
+            title="Credits on your Phone Number"
+            description="Points credited basis the phone number"
+            icon={
+              <MaterialCommunityIcons
+                name="wallet-outline"
+                size={18}
+                color={Colors.light.rearText}
+              />
+            }
+          />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
+    backgroundColor: "#f0f0f0",
   },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
+  welcomeCard: {
+    backgroundColor: "#ffd700",
+    padding: 16,
+    marginHorizontal: 16,
+    borderRadius: 8,
+  },
+  welcomeTitle: {
+    fontSize: 16,
+  },
+  rewardsTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+  welcomeDescription: {
+    fontSize: 14,
+  },
+  pointsCard: {
+    backgroundColor: Colors.light.rearText,
+    paddingHorizontal: 16,
+    paddingVertical: 30,
+    margin: 16,
+    borderRadius: 8,
+  },
+  pointsTitle: {
+    color: "white",
+    fontSize: 16,
+    marginBottom: 8,
+  },
+  pointsCount: {
+    color: "white",
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+  progressBar: {
+    height: 4,
+    backgroundColor: "#ffffff50",
+    borderRadius: 2,
+  },
+
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 16,
+    color: Colors.light.rearText,
+  },
+  infoItem: {
+    marginBottom: 16,
+  },
+  howItWorksTitleContainer: {
+    paddingHorizontal: 30,
+    paddingTop: 17,
   },
 });
+
+export default RewardsScreen;

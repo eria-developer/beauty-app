@@ -1,14 +1,14 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 
-const more = () => {
+const TrackOrderScreen = () => {
   return (
     <View>
-      <Text>more</Text>
+      <Text>TrackOrderScreen</Text>
     </View>
   )
 }
 
-export default more
+export default TrackOrderScreen
 
 const styles = StyleSheet.create({})

@@ -18,26 +18,29 @@ const HalfScreenBackgroundLayout = () => {
     <View style={styles.container}>
       <ImageBackground
         source={{
-          uri: "https://images.freeimages.com/images/large-previews/f7e/hair-care-3-1507938.jpg?fmt=webp&h=350",
+          uri: "https://images.freeimages.com/images/large-previews/63e/food-1322797.jpg?fmt=webp&h=350",
         }}
         style={styles.backgroundImage}
       >
         <View style={styles.imageOverlay} />
         <View style={styles.overlay}>
           <Text style={styles.overlayText}>WELCOME TO</Text>
-          <Text style={styles.secondOverlayText}>GLOW-MART!!</Text>
+          <Text style={styles.secondOverlayText}>CJ's!!</Text>
         </View>
-        <TouchableOpacity style={styles.startOrderButton}>
+        <TouchableOpacity
+          style={styles.startOrderButton}
+          onPress={() => router.push("/order")}
+        >
           <AntDesign name="Safety" size={20} color={"#fff"} />
           <View style={styles.buttonTextContainer}>
-            <Text style={styles.buttonText}>EXPLORE</Text>
+            <Text style={styles.buttonText}>START TO ORDER</Text>
           </View>
         </TouchableOpacity>
       </ImageBackground>
       <View style={styles.contentContainer}>
         <Text style={styles.contentText}>ORDER FIRST FROM YOUR FAVORITES</Text>
         <TouchableOpacity style={styles.branchesButton}>
-          <Text style={styles.buttonText}>View All Product Categories and Services</Text>
+          <Text style={styles.buttonText}>View Our Cafe Javas Branches</Text>
         </TouchableOpacity>
         <View style={styles.registerAndLoginButtons}>
           <TouchableOpacity
