@@ -18,14 +18,14 @@ const HalfScreenBackgroundLayout = () => {
     <View style={styles.container}>
       <ImageBackground
         source={{
-          uri: "https://images.freeimages.com/images/large-previews/63e/food-1322797.jpg?fmt=webp&h=350",
+          uri: "https://img.freepik.com/free-photo/front-view-smiley-woman-holding-hair-products_23-2149635003.jpg?ga=GA1.1.476787416.1724867277&semt=ais_hybrid",
         }}
         style={styles.backgroundImage}
       >
         <View style={styles.imageOverlay} />
         <View style={styles.overlay}>
           <Text style={styles.overlayText}>WELCOME TO</Text>
-          <Text style={styles.secondOverlayText}>CJ's!!</Text>
+          <Text style={styles.secondOverlayText}>BEAUTY PARLOUR!!</Text>
         </View>
         <TouchableOpacity
           style={styles.startOrderButton}
@@ -33,14 +33,20 @@ const HalfScreenBackgroundLayout = () => {
         >
           <AntDesign name="Safety" size={20} color={"#fff"} />
           <View style={styles.buttonTextContainer}>
-            <Text style={styles.buttonText}>START TO ORDER</Text>
+            <Text style={styles.buttonText}>EXPLORE</Text>
           </View>
         </TouchableOpacity>
       </ImageBackground>
+
       <View style={styles.contentContainer}>
         <Text style={styles.contentText}>ORDER FIRST FROM YOUR FAVORITES</Text>
-        <TouchableOpacity style={styles.branchesButton}>
-          <Text style={styles.buttonText}>View Our Cafe Javas Branches</Text>
+        <TouchableOpacity
+          style={styles.branchesButton}
+          onPress={() => router.push("/(drawer)/(tabs)/order")}
+        >
+          <Text style={styles.buttonText}>
+            View All Saloons, Services and Products
+          </Text>
         </TouchableOpacity>
         <View style={styles.registerAndLoginButtons}>
           <TouchableOpacity
@@ -92,8 +98,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   secondOverlayText: {
-    color: "white",
-    fontSize: 40,
+    color: Colors.light.primary,
+    fontSize: 20,
     fontWeight: "bold",
     textAlign: "center",
   },
