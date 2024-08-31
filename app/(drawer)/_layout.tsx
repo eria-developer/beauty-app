@@ -76,6 +76,7 @@ const CustomDrawerContent = (props: any) => {
 const DrawerLayout = () => {
   return (
     <Drawer
+      initialRouteName="order"
       drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{
         headerShown: false,
