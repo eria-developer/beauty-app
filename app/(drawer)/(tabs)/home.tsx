@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Colors } from "@/constants/Colors";
+import { LinearGradient } from "expo-linear-gradient";
 
 const { height, width } = Dimensions.get("window");
 
@@ -38,43 +39,50 @@ const HalfScreenBackgroundLayout = () => {
         </TouchableOpacity>
       </ImageBackground>
 
-      <View style={styles.contentContainer}>
-        <Text style={styles.contentText}>ORDER FIRST FROM YOUR FAVORITES</Text>
-        <TouchableOpacity
-          style={styles.branchesButton}
-          onPress={() => router.push("/(drawer)/(tabs)/order")}
-        >
-          <Text style={styles.buttonText}>
-            View All Saloons, Services and Products
+      <LinearGradient colors={["white", "#DFB7BF"]} style={styles.background}>
+        <View style={styles.contentContainer}>
+          <Text style={styles.contentText}>
+            ORDER FIRST FROM YOUR FAVORITES
           </Text>
-        </TouchableOpacity>
-        <View style={styles.registerAndLoginButtons}>
           <TouchableOpacity
-            style={styles.authButton}
-            onPress={() => router.push("/(auth)/login")}
+            style={styles.branchesButton}
+            onPress={() => router.push("/(drawer)/(tabs)/order")}
           >
-            <Text style={styles.buttonText}>LOGIN</Text>
+            <Text style={styles.buttonText}>
+              View All Saloons, Services and Products
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.authButton}
-            onPress={() => router.push("/(auth)")}
-          >
-            <Text style={styles.buttonText}>REGISTER</Text>
-          </TouchableOpacity>
+          <View style={styles.registerAndLoginButtons}>
+            <TouchableOpacity
+              style={styles.authButton}
+              onPress={() => router.push("/(auth)/login")}
+            >
+              <Text style={styles.buttonText}>LOGIN</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.authButton}
+              onPress={() => router.push("/(auth)")}
+            >
+              <Text style={styles.buttonText}>REGISTER</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.recentOrders}>
+            <Text style={styles.recentOrderTitle}>My Recent Orders</Text>
+          </View>
+          <Text style={styles.loginPrompt}>
+            Login for an easy, one tap order again for your recent orders
+          </Text>
         </View>
-        <View style={styles.recentOrders}>
-          <Text style={styles.recentOrderTitle}>My Recent Orders</Text>
-        </View>
-        <Text style={styles.loginPrompt}>
-          Login for an easy, one tap order again for your recent orders
-        </Text>
-      </View>
+      </LinearGradient>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  background: {
     flex: 1,
   },
   backgroundImage: {
