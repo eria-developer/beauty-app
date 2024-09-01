@@ -18,6 +18,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import SearchInput from "@/components/SearchInput";
 import { FlashList } from "@shopify/flash-list";
 import { SafeAreaView } from "react-native-safe-area-context";
+import FloatingCartIcon from "@/components/FloatingCart";
 
 const MenuScreen = () => {
   const [searchInput, setSearchInput] = useState("");
@@ -89,6 +90,25 @@ const MenuScreen = () => {
     },
   ];
 
+  // data for recommended products and services
+  const recommendedData = [
+    {
+      name: "Hair Treatment",
+      image:
+        "https://img.freepik.com/free-photo/young-woman-getting-hair-care-treatment_23-2148850132.jpg?t=st=1725196341~exp=1725199941~hmac=08b3d3d4059ef74d947f5df5cf2a7c8b6824859c5826ea95e42399ba1a4b05ab&w=996",
+    },
+    {
+      name: "Nail Art",
+      image:
+        "https://img.freepik.com/free-photo/close-up-hand-with-nail-art_23-2148217851.jpg?t=st=1725197342~exp=1725200942~hmac=7fdf1b0850f6a79e2ac9e22dcbf9a98d65b687b49718c3b7a8983be457bede5a&w=996",
+    },
+    {
+      name: "Massage Therapy",
+      image:
+        "https://img.freepik.com/free-photo/massage-therapist-work-with-woman-body-spa-salon_23-2148217853.jpg?t=st=1725197342~exp=1725200942~hmac=0c92b67a30e5d71ab52b08ffbc1dddfdc074a5d84df08fc0e30bfa3da6928c30&w=996",
+    },
+  ];
+
   // function to render the top items
   const renderTopData = ({ item }) => (
     <View style={styles.itemContainer}>
@@ -97,6 +117,7 @@ const MenuScreen = () => {
     </View>
   );
 
+  // render featured categories
   const renderFeaturedCategory = ({ item }) => (
     <View style={styles.featuredCategoryCard}>
       <Image
@@ -109,6 +130,14 @@ const MenuScreen = () => {
       >
         <Text style={styles.featuredCategoryText}>{item.name}</Text>
       </LinearGradient>
+    </View>
+  );
+
+  // render recomended items
+  const renderRecommendedItem = ({ item }) => (
+    <View style={styles.recommendedItemCard}>
+      <Image source={{ uri: item.image }} style={styles.recommendedItemImage} />
+      <Text style={styles.recommendedItemText}>{item.name}</Text>
     </View>
   );
 
@@ -176,6 +205,7 @@ const MenuScreen = () => {
           </View>
         </View>
       </ScrollView>
+      <FloatingCartIcon />
     </LinearGradient>
     // </SafeAreaView>
   );
