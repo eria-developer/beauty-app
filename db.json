@@ -1,0 +1,162 @@
+{
+    "salons": [
+      {
+        "id": 1,
+        "name": "Luxury Salon",
+        "description": "Premium salon offering top-notch services.",
+        "location": "Downtown",
+        "services": [
+          {
+            "id": 1,
+            "name": "Haircut",
+            "price": 15000
+          },
+          {
+            "id": 2,
+            "name": "Manicure",
+            "price": 10000
+          }
+        ],
+        "products": [
+          {
+            "id": 1,
+            "name": "Shampoo",
+            "price": 20000,
+            "image": "https://example.com/shampoo.jpg"
+          },
+          {
+            "id": 2,
+            "name": "Conditioner",
+            "price": 15000,
+            "image": "https://example.com/conditioner.jpg"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "name": "Glamour Salon",
+        "description": "Affordable salon with quality services.",
+        "location": "Uptown",
+        "services": [
+          {
+            "id": 3,
+            "name": "Facial",
+            "price": 20000
+          },
+          {
+            "id": 4,
+            "name": "Pedicure",
+            "price": 12000
+          }
+        ],
+        "products": [
+          {
+            "id": 3,
+            "name": "Hair Gel",
+            "price": 10000,
+            "image": "https://example.com/hair-gel.jpg"
+          },
+          {
+            "id": 4,
+            "name": "Hair Spray",
+            "price": 18000,
+            "image": "https://example.com/hair-spray.jpg"
+          }
+        ]
+      }
+    ],
+    "users": [
+      {
+        "id": 1,
+        "name": "John Doe",
+        "email": "john@example.com",
+        "cart": [
+          {
+            "productId": 1,
+            "quantity": 2
+          },
+          {
+            "productId": 3,
+            "quantity": 1
+          }
+        ],
+        "orders": [
+          {
+            "orderId": 1,
+            "products": [
+              {
+                "productId": 2,
+                "quantity": 1,
+                "price": 15000
+              }
+            ],
+            "totalPrice": 15000,
+            "status": "Pending",
+            "createdAt": "2024-08-31T14:48:00.000Z"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "name": "Jane Smith",
+        "email": "jane@example.com",
+        "cart": [],
+        "orders": [
+          {
+            "orderId": 2,
+            "products": [
+              {
+                "productId": 1,
+                "quantity": 1,
+                "price": 20000
+              },
+              {
+                "productId": 4,
+                "quantity": 2,
+                "price": 36000
+              }
+            ],
+            "totalPrice": 56000,
+            "status": "Completed",
+            "createdAt": "2024-08-30T10:30:00.000Z"
+          }
+        ]
+      }
+    ],
+    "orders": [
+      {
+        "orderId": 1,
+        "userId": 1,
+        "products": [
+          {
+            "productId": 2,
+            "quantity": 1,
+            "price": 15000
+          }
+        ],
+        "totalPrice": 15000,
+        "status": "Pending",
+        "createdAt": "2024-08-31T14:48:00.000Z"
+      },
+      {
+        "orderId": 2,
+        "userId": 2,
+        "products": [
+          {
+            "productId": 1,
+            "quantity": 1,
+            "price": 20000
+          },
+          {
+            "productId": 4,
+            "quantity": 2,
+            "price": 36000
+          }
+        ],
+        "totalPrice": 56000,
+        "status": "Completed",
+        "createdAt": "2024-08-30T10:30:00.000Z"
+      }
+    ]
+  }
+  
