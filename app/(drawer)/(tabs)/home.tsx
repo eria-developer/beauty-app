@@ -11,10 +11,13 @@ import {
 } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { LinearGradient } from "expo-linear-gradient";
+import { Session } from "@supabase/supabase-js";
+import { useAuth } from "@/providers/AuthProvider";
 
 const { height, width } = Dimensions.get("window");
 
 const HalfScreenBackgroundLayout = () => {
+  const { session, user, signOut } = useAuth();
   return (
     <View style={styles.container}>
       <ImageBackground
@@ -52,20 +55,26 @@ const HalfScreenBackgroundLayout = () => {
               View All Saloons, Services and Products
             </Text>
           </TouchableOpacity>
-          <View style={styles.registerAndLoginButtons}>
-            <TouchableOpacity
-              style={styles.authButton}
-              onPress={() => router.push("/(auth)/login")}
-            >
-              <Text style={styles.buttonText}>LOGIN</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.authButton}
-              onPress={() => router.push("/(auth)")}
-            >
-              <Text style={styles.buttonText}>REGISTER</Text>
-            </TouchableOpacity>
-          </View>
+
+          {/* login and register buttons  */}
+          {!session && (
+            <View style={styles.registerAndLoginButtons}>
+              <TouchableOpacity
+                style={styles.authButton}
+                onPress={() => router.push("/(auth)/login")}
+              >
+                <Text style={styles.buttonText}>LOGIN</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.authButton}
+                onPress={() => router.push("/(auth)")}
+              >
+                <Text style={styles.buttonText}>REGISTER</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* recent orders section  */}
           <View style={styles.recentOrders}>
             <Text style={styles.recentOrderTitle}>My Recent Orders</Text>
           </View>

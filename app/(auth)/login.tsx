@@ -7,16 +7,27 @@ import {
   StyleSheet,
   Dimensions,
   ScrollView,
+  AppState,
 } from "react-native";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { router } from "expo-router";
 import { Colors } from "@/constants/Colors";
+import { supabase } from "@/lib/supabase";
 
 const { width } = Dimensions.get("window");
+
+AppState.addEventListener("change", (state) => {
+  if (state === "active") {
+    supabase.auth.startAutoRefresh();
+  } else {
+    supabase.auth.stopAutoRefresh();
+  }
+});
 
 const LoginScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false)
 
   const handleLogin = () => {
     console.log("Login pressed");
@@ -33,7 +44,7 @@ const LoginScreen = ({ navigation }: any) => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.logoContainer}>
-        <FontAwesome name="coffee" size={80} color={Colors.light.primary }/>
+        <FontAwesome name="coffee" size={80} color={Colors.light.primary} />
         <Text style={styles.logoText}>CJ's</Text>
       </View>
 

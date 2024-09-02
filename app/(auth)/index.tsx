@@ -8,96 +8,93 @@ import {
   Dimensions,
   ScrollView,
   Image,
+  AppState,
+  Alert,
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { Colors } from "@/constants/Colors";
+import { supabase } from "@/lib/supabase";
+
+AppState.addEventListener("change", (state) => {
+  if (state === "active") {
+    supabase.auth.startAutoRefresh();
+  } else {
+    supabase.auth.stopAutoRefresh();
+  }
+});
 
 const { width } = Dimensions.get("window");
 
 const SignUpScreen = () => {
-  const [profilePic, setProfilePic] = useState(null);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [month, setMonth] = useState("");
-  const [day, setDay] = useState("");
-  const [year, setYear] = useState("");
-  const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleSignUp = () => {
-    console.log("Sign up pressed");
-    router.push("/(auth)/add-number");
+    signUpWithEmail();
+    router.push("/(drawer)/(tabs)/home");
   };
 
   const handleLogin = () => {
     router.push("/(auth)/login");
   };
 
-  const handleProfilePicSelect = () => {
-    console.log("Select profile pic");
-  };
+  // async function signUpWithEmail() {
+  //   setLoading(true);
+  //   const {
+  //     data: { session },
+  //     error,
+  //   } = await supabase.auth.signUp({
+  //     email: email,
+  //     password: password,
+  //   });
+
+  //   if (error) Alert.alert(error.message);
+  //   if (!session)
+  //     Alert.alert("Please check your inbox for email verification!");
+  //   setLoading(false);
+  // }
+
+  async function signUpWithEmail() {
+    setLoading(true);
+    const {
+      data: { session },
+      error: signUpError,
+    } = await supabase.auth.signUp({
+      email: email,
+      password: password,
+    });
+
+    if (signUpError) {
+      Alert.alert(signUpError.message);
+      setLoading(false);
+      return;
+    }
+
+    // Insert user details into the users table
+    const { error: insertError } = await supabase
+      .from("users")
+      .insert([{ username: username, email: email }]);
+
+    if (insertError) {
+      Alert.alert(insertError.message);
+    } else {
+      router.push("/(drawer)/(tabs)/home");
+    }
+
+    setLoading(false);
+  }
 
   return (
     <ScrollView style={styles.container}>
-      <TouchableOpacity
-        style={styles.profilePicContainer}
-        onPress={handleProfilePicSelect}
-      >
-        {profilePic ? (
-          <Image source={{ uri: profilePic }} style={styles.profilePic} />
-        ) : (
-          <View style={styles.profilePicPlaceholder}>
-            <AntDesign name="camerao" size={40} color={Colors.light.primary} />
-            <Text style={styles.profilePicText}>Add Photo</Text>
-          </View>
-        )}
-      </TouchableOpacity>
-
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          placeholder="First Name"
-          value={firstName}
-          onChangeText={setFirstName}
-        />
-      </View>
-
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Last Name"
-          value={lastName}
-          onChangeText={setLastName}
-        />
-      </View>
-
-      <Text style={styles.birthdayLabel}>Birthday</Text>
-      <View style={styles.birthdayContainer}>
-        <TextInput
-          style={[styles.input, styles.birthdayInput]}
-          placeholder="MM"
-          value={month}
-          onChangeText={setMonth}
-          keyboardType="number-pad"
-          maxLength={2}
-        />
-        <TextInput
-          style={[styles.input, styles.birthdayInput]}
-          placeholder="DD"
-          value={day}
-          onChangeText={setDay}
-          keyboardType="number-pad"
-          maxLength={2}
-        />
-        <TextInput
-          style={[styles.input, styles.birthdayInput]}
-          placeholder="YYYY"
-          value={year}
-          onChangeText={setYear}
-          keyboardType="number-pad"
-          maxLength={4}
+          placeholder="Username"
+          value={username}
+          onChangeText={setUsername}
         />
       </View>
 
@@ -121,23 +118,7 @@ const SignUpScreen = () => {
         />
       </View>
 
-      <TouchableOpacity
-        style={styles.termsContainer}
-        onPress={() => setAgreeToTerms(!agreeToTerms)}
-      >
-        <View style={styles.checkbox}>
-          {agreeToTerms && <AntDesign name="check" size={16} color={Colors.light.primary} />}
-        </View>
-        <Text style={styles.termsText}>
-          I agree to the Terms and Conditions
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.signUpButton}
-        onPress={handleSignUp}
-        disabled={!agreeToTerms}
-      >
+      <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
         <Text style={styles.signUpButtonText}>CONTINUE</Text>
       </TouchableOpacity>
 
