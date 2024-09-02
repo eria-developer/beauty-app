@@ -8,37 +8,93 @@ import {
   ScrollView,
   Image,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Picker } from "@react-native-picker/picker";
 import { Colors } from "@/constants/Colors";
 import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/providers/AuthProvider";
 
 const AddProductServiceScreen = () => {
   const [type, setType] = useState("product");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
+  const [stock, setStock] = useState("");
+  const [duration, setDuration] = useState("");
   const [category, setCategory] = useState("");
+  const [location, setLocation] = useState("");
   const [image, setImage] = useState(null);
+  const { user } = useAuth();
 
-  const handleSubmit = () => {
-    console.log("Submitting:", {
-      type,
-      name,
-      description,
-      price,
-      category,
-      image,
-    });
-  };
+  console.log(user?.id);
 
   const handleImageUpload = () => {
     console.log("Image upload");
   };
 
+  const handleSubmit = async () => {
+    const ownerId = user?.id;
+
+    if (!ownerId) {
+      console.error("User not logged in");
+      return;
+    }
+
+    // Prepare the new item based on the selected type
+    let newItem;
+
+    if (type === "salon") {
+      newItem = {
+        name,
+        location,
+        description: null,
+        image: null,
+        owner: ownerId,
+      };
+    } else if (type === "product") {
+      newItem = {
+        name,
+        description,
+        price: parseFloat(price),
+        stock: parseInt(stock),
+        image: null,
+        seller: ownerId,
+        created_at: new Date(),
+      };
+    } else if (type === "service") {
+      newItem = {
+        name,
+        description,
+        price: parseFloat(price),
+        duration: parseInt(duration),
+        created_at: new Date(),
+      };
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from(
+          type === "salon"
+            ? "saloons"
+            : type === "product"
+            ? "products"
+            : "services"
+        )
+        .insert([newItem]);
+
+      if (error) throw error; // Throw error if any
+
+      console.log(
+        `${type.charAt(0).toUpperCase() + type.slice(1)} added successfully:`,
+        data
+      );
+    } catch (error) {
+      console.error("Error inserting data:", error.message);
+    }
+  };
+
   return (
-    // <SafeAreaView style={styles.safeArea}>
     <LinearGradient colors={["white", "#DFB7BF"]} style={styles.background}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.container}>
@@ -56,6 +112,7 @@ const AddProductServiceScreen = () => {
               >
                 <Picker.Item label="Product" value="product" />
                 <Picker.Item label="Service" value="service" />
+                <Picker.Item label="Salon" value="salon" />
               </Picker>
             </View>
           </View>
@@ -67,45 +124,67 @@ const AddProductServiceScreen = () => {
               value={name}
               onChangeText={setName}
               placeholder={`Enter ${type} name`}
-              placeholderTextColor={Colors.light.placeholderText}
+              placeholderTextColor={Colors.light.primary}
             />
           </View>
 
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Description</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              value={description}
-              onChangeText={setDescription}
-              placeholder={`Describe your ${type}`}
-              placeholderTextColor={Colors.light.placeholderText}
-              multiline
-              numberOfLines={4}
-            />
-          </View>
+          {type !== "salon" && (
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Description</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={description}
+                onChangeText={setDescription}
+                placeholder={`Describe your ${type}`}
+                placeholderTextColor={Colors.light.primary}
+                multiline
+                numberOfLines={4}
+              />
+            </View>
+          )}
 
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Price</Text>
-            <TextInput
-              style={styles.input}
-              value={price}
-              onChangeText={setPrice}
-              placeholder="Enter price"
-              placeholderTextColor={Colors.light.placeholderText}
-              keyboardType="numeric"
-            />
-          </View>
+          {(type === "product" || type === "service") && (
+            <>
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Price</Text>
+                <TextInput
+                  style={styles.input}
+                  value={price}
+                  onChangeText={setPrice}
+                  placeholder="Enter price"
+                  placeholderTextColor={Colors.light.primary}
+                  keyboardType="numeric"
+                />
+              </View>
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Category</Text>
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={category}
+                    onValueChange={setCategory}
+                    style={styles.picker}
+                  >
+                    <Picker.Item label="Perfumes" value="perfumes" />
+                    <Picker.Item label="Wigs" value="wigs" />
+                    <Picker.Item label="Vaseline" value="vaseline" />
+                  </Picker>
+                </View>
+              </View>
+            </>
+          )}
 
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Category</Text>
-            <TextInput
-              style={styles.input}
-              value={category}
-              onChangeText={setCategory}
-              placeholder={`Enter ${type} category`}
-              placeholderTextColor={Colors.light.placeholderText}
-            />
-          </View>
+          {type === "salon" && (
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Location</Text>
+              <TextInput
+                style={styles.input}
+                value={location}
+                onChangeText={setLocation}
+                placeholder="Enter salon location"
+                placeholderTextColor={Colors.light.primary}
+              />
+            </View>
+          )}
 
           <View style={styles.formGroup}>
             <Text style={styles.label}>Image</Text>
@@ -136,14 +215,10 @@ const AddProductServiceScreen = () => {
         </View>
       </ScrollView>
     </LinearGradient>
-    // </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
-    // flex: 1,
-  },
   background: {
     flex: 1,
   },
@@ -157,7 +232,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: Colors.light.rearText,
+    color: Colors.light.primary,
     marginBottom: 20,
   },
   formGroup: {
@@ -172,57 +247,57 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "rgba(255, 255, 255, 0.8)",
     borderWidth: 1,
-    borderColor: Colors.light.border,
+    borderColor: Colors.light.primary,
     borderRadius: 8,
-    padding: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
     fontSize: 16,
-    color: Colors.light.rearText,
+    color: Colors.light.primary,
   },
   textArea: {
     height: 100,
-    textAlignVertical: "top",
   },
   pickerContainer: {
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
     borderWidth: 1,
-    borderColor: Colors.light.border,
+    borderColor: Colors.light.primary,
     borderRadius: 8,
-    overflow: "hidden",
   },
   picker: {
-    color: Colors.light.rearText,
+    height: 50,
+    width: "100%",
   },
   imageUpload: {
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
     borderWidth: 1,
-    borderColor: Colors.light.border,
+    borderColor: Colors.light.primary,
     borderRadius: 8,
-    height: 200,
+    height: 150,
     justifyContent: "center",
     alignItems: "center",
-  },
-  uploadPlaceholder: {
-    alignItems: "center",
-  },
-  uploadText: {
-    marginTop: 10,
-    color: Colors.light.rearText,
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
   },
   uploadedImage: {
     width: "100%",
     height: "100%",
     borderRadius: 8,
   },
+  uploadPlaceholder: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  uploadText: {
+    marginTop: 10,
+    color: Colors.light.primary,
+  },
   submitButton: {
     backgroundColor: Colors.light.primary,
-    paddingVertical: 15,
+    paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",
   },
   submitButtonText: {
-    color: "white",
+    color: Colors.light.background,
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: "600",
   },
 });
 
