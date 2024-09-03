@@ -8,6 +8,8 @@ import {
   Dimensions,
   ScrollView,
   AppState,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { router } from "expo-router";
@@ -27,11 +29,27 @@ AppState.addEventListener("change", (state) => {
 const LoginScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    console.log("Login pressed");
+  const handleLogin = async () => {
+    await signInWithEmail();
   };
+
+  async function signInWithEmail() {
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email,
+      password: password,
+    });
+
+    if (error) {
+      Alert.alert(error.message);
+    } else {
+      router.push("/(drawer)/(tabs)/home");
+    }
+
+    setLoading(false);
+  }
 
   const handleForgotPassword = () => {
     console.log("Forgot password pressed");
@@ -44,8 +62,7 @@ const LoginScreen = ({ navigation }: any) => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.logoContainer}>
-        <FontAwesome name="coffee" size={80} color={Colors.light.primary} />
-        <Text style={styles.logoText}>CJ's</Text>
+        <FontAwesome name="key" size={80} color={Colors.light.primary} />
       </View>
 
       <View style={styles.inputContainer}>
@@ -76,7 +93,11 @@ const LoginScreen = ({ navigation }: any) => {
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-        <Text style={styles.loginButtonText}>LOGIN</Text>
+        {loading ? (
+          <ActivityIndicator size={"small"} color={"#fff"} />
+        ) : (
+          <Text style={styles.loginButtonText}>LOGIN</Text>
+        )}
       </TouchableOpacity>
 
       <View style={styles.signUpContainer}>

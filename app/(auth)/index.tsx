@@ -33,9 +33,8 @@ const SignUpScreen = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSignUp = () => {
-    signUpWithEmail();
-    router.push("/(drawer)/(tabs)/home");
+  const handleSignUp = async () => {
+    await signUpWithEmail();
   };
 
   const handleLogin = () => {
@@ -56,18 +55,21 @@ const SignUpScreen = () => {
       Alert.alert(signUpError.message);
       setLoading(false);
       return;
-    }
-
-    // Insert user details into the users table
-    const { error: insertError } = await supabase
-      .from("users")
-      .insert([{ username: username, email: email }]);
-
-    if (insertError) {
-      Alert.alert(insertError.message);
     } else {
       router.push("/(drawer)/(tabs)/home");
+      setLoading(false);
     }
+
+    // // Insert user details into the users table
+    // const { error: insertError } = await supabase
+    //   .from("users")
+    //   .insert([{ username: username, email: email }]);
+
+    // if (insertError) {
+    //   Alert.alert(insertError.message);
+    // } else {
+    //   router.push("/(drawer)/(tabs)/home");
+    // }
 
     setLoading(false);
   }
