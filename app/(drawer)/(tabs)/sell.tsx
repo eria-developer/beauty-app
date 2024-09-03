@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -30,103 +30,139 @@ const AddProductServiceScreen = () => {
   const [image, setImage] = useState(null);
   const { user } = useAuth();
 
-  console.log(user?.id);
+  useEffect(() => {
+    console.log("Current user:", user);
+  }, [user]);
 
-  // const handleImageUpload = () => {
-  //   console.log("Image upload");
-  // };
-
-  // FUNCTION TO HANDLE UPLOADING THE IMAGE
   const handleImageUpload = async () => {
-    // Request permission to access the camera roll
-    const permissionResult =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permissionResult.granted) {
-      Alert.alert("Permission to access camera roll is required!");
-      return;
-    }
+    try {
+      console.log("Starting image upload process");
 
-    // Allow the user to pick an image
-    const pickerResult = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+      if (!user) {
+        console.error("User not authenticated");
+        Alert.alert("Error", "You must be logged in to upload images.");
+        return;
+      }
 
-    if (pickerResult.canceled) {
-      return;
-    }
+      const permissionResult =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      console.log("Permission result:", permissionResult);
 
-    // Generate a unique name for the image
-    const uniqueImageName = `${uuid.v4()}.jpg`;
+      if (!permissionResult.granted) {
+        Alert.alert(
+          "Permission Denied",
+          "Permission to access camera roll is required!"
+        );
+        return;
+      }
 
-    // Upload the image to Supabase storage
-    const { data, error } = await supabase.storage
-      .from("products")
-      .upload(uniqueImageName, {
-        uri: pickerResult?.uri,
-        type: "image/jpeg",
-        name: uniqueImageName,
+      const pickerResult = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
       });
 
-    if (error) {
-      console.error("Error uploading image:", error.message);
-      Alert.alert("Error uploading image");
-      return;
+      console.log("Picker result:", pickerResult);
+
+      if (pickerResult.canceled) {
+        console.log("Image picking cancelled");
+        return;
+      }
+
+      const uniqueImageName = `${uuid.v4()}.jpg`;
+      console.log("Generated unique image name:", uniqueImageName);
+
+      const { data, error } = await supabase.storage
+        .from("products")
+        .upload(uniqueImageName, {
+          uri: pickerResult.assets[0].uri,
+          type: "image/jpeg",
+          name: uniqueImageName,
+        });
+
+      if (error) {
+        console.error("Supabase storage upload error:", error);
+        Alert.alert(
+          "Upload Error",
+          `Error uploading image: ${error.message}\nStatus Code: ${error.statusCode}`
+        );
+        return;
+      }
+
+      console.log("Supabase storage upload result:", data);
+
+      const { data: publicURLData, error: publicURLError } = supabase.storage
+        .from("products")
+        .getPublicUrl(uniqueImageName);
+
+      if (publicURLError) {
+        console.error("Error getting public URL:", publicURLError);
+        Alert.alert(
+          "URL Error",
+          `Error getting public URL: ${publicURLError.message}`
+        );
+        return;
+      }
+
+      console.log("Public URL data:", publicURLData);
+      setImage(publicURLData.publicUrl);
+      Alert.alert("Success", "Image uploaded successfully");
+    } catch (error) {
+      console.error("Unexpected error during image upload:", error);
+      Alert.alert(
+        "Unexpected Error",
+        `An unexpected error occurred: ${error.message}`
+      );
     }
-
-    // Get the public URL of the uploaded image
-    const { publicURL } = supabase.storage
-      .from("products")
-      .getPublicUrl(uniqueImageName);
-
-    // Set the image URL to the state
-    setImage(publicURL);
   };
 
-  // FUNCTION TO HANDLE SUBMITTING OF THE DATA
   const handleSubmit = async () => {
-    const ownerId = user?.id;
-
-    if (!ownerId) {
-      console.error("User not logged in");
-      return;
-    }
-
-    // Prepare the new item based on the selected type
-    let newItem;
-
-    if (type === "salon") {
-      newItem = {
-        name,
-        location,
-        description: null,
-        image: image || null,
-        owner: ownerId,
-      };
-    } else if (type === "product") {
-      newItem = {
-        name,
-        description,
-        price: parseFloat(price),
-        stock: parseInt(stock),
-        image: image || null,
-        seller: ownerId,
-        created_at: new Date(),
-      };
-    } else if (type === "service") {
-      newItem = {
-        name,
-        description,
-        price: parseFloat(price),
-        image: image || null,
-        duration: parseInt(duration),
-        created_at: new Date(),
-      };
-    }
-
     try {
+      console.log("Starting submit process");
+
+      const ownerId = user?.id;
+      console.log("Owner ID:", ownerId);
+
+      if (!ownerId) {
+        console.error("User not logged in");
+        Alert.alert("Error", "User not logged in");
+        return;
+      }
+
+      let newItem;
+
+      if (type === "salon") {
+        newItem = {
+          name,
+          location,
+          description: null,
+          image: image || null,
+          owner: ownerId,
+        };
+      } else if (type === "product") {
+        newItem = {
+          name,
+          description,
+          price: parseFloat(price),
+          stock: parseInt(stock),
+          image: image || null,
+          seller: ownerId,
+          created_at: new Date(),
+        };
+      } else if (type === "service") {
+        newItem = {
+          name,
+          description,
+          price: parseFloat(price),
+          image: image || null,
+          duration: parseInt(duration),
+          created_at: new Date(),
+        };
+      }
+
+      console.log("New item to be inserted:", newItem);
+
       const { data, error } = await supabase
         .from(
           type === "salon"
@@ -137,14 +173,33 @@ const AddProductServiceScreen = () => {
         )
         .insert([newItem]);
 
-      if (error) throw error; // Throw error if any
+      if (error) {
+        console.error("Supabase insert error:", error);
+        Alert.alert("Insert Error", `Error inserting data: ${error.message}`);
+        return;
+      }
 
-      console.log(
-        `${type.charAt(0).toUpperCase() + type.slice(1)} added successfully:`,
-        data
+      console.log("Supabase insert result:", data);
+      Alert.alert(
+        "Success",
+        `${type.charAt(0).toUpperCase() + type.slice(1)} added successfully`
       );
+
+      // Reset form fields here if needed
+      setName("");
+      setDescription("");
+      setPrice("");
+      setStock("");
+      setDuration("");
+      setCategory("");
+      setLocation("");
+      setImage(null);
     } catch (error) {
-      console.error("Error inserting data:", error.message);
+      console.error("Unexpected error during submit:", error);
+      Alert.alert(
+        "Unexpected Error",
+        `An unexpected error occurred: ${error.message}`
+      );
     }
   };
 
