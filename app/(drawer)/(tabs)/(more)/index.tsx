@@ -1,9 +1,30 @@
-import { StyleSheet, Text, View, SafeAreaView, Dimensions } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  SafeAreaView,
+  Dimensions,
+  TouchableOpacity,
+} from "react-native";
 import React from "react";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { Colors } from "@/constants/Colors";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/providers/AuthProvider";
 
 const more = () => {
+  const { session } = useAuth();
+
+  const handleLogOut = async () => {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      console.error("Error logging out:", error.message);
+    } else {
+      console.log("Logged out successfully");
+      router.push("/(drawer)/(tabs)/home");
+    }
+  };
   const linkItems = [
     { href: "/(drawer)/(more)/e-gift-card", text: "E-Gift card" },
     { href: "/(drawer)/(more)/track-order", text: "Track Order" },
@@ -27,6 +48,16 @@ const more = () => {
           </View>
         </Link>
       ))}
+
+      {session && (
+        <View style={styles.linkWrapper}>
+          <TouchableOpacity onPress={handleLogOut}>
+            <View style={styles.linkItemCard}>
+              <Text style={styles.linkText}>Logout</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      )}
     </SafeAreaView>
   );
 };

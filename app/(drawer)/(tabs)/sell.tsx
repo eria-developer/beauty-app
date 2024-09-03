@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ScrollView,
   Image,
+  Alert,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { Colors } from "@/constants/Colors";
@@ -14,6 +15,8 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/providers/AuthProvider";
+import * as ImagePicker from "expo-image-picker";
+import uuid from "react-native-uuid";
 
 const AddProductServiceScreen = () => {
   const [type, setType] = useState("product");
@@ -29,10 +32,60 @@ const AddProductServiceScreen = () => {
 
   console.log(user?.id);
 
-  const handleImageUpload = () => {
-    console.log("Image upload");
+  // const handleImageUpload = () => {
+  //   console.log("Image upload");
+  // };
+
+  // FUNCTION TO HANDLE UPLOADING THE IMAGE
+  const handleImageUpload = async () => {
+    // Request permission to access the camera roll
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      Alert.alert("Permission to access camera roll is required!");
+      return;
+    }
+
+    // Allow the user to pick an image
+    const pickerResult = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (pickerResult.canceled) {
+      return;
+    }
+
+    // Generate a unique name for the image
+    const uniqueImageName = `${uuid.v4()}.jpg`;
+
+    // Upload the image to Supabase storage
+    const { data, error } = await supabase.storage
+      .from("products")
+      .upload(uniqueImageName, {
+        uri: pickerResult?.uri,
+        type: "image/jpeg",
+        name: uniqueImageName,
+      });
+
+    if (error) {
+      console.error("Error uploading image:", error.message);
+      Alert.alert("Error uploading image");
+      return;
+    }
+
+    // Get the public URL of the uploaded image
+    const { publicURL } = supabase.storage
+      .from("products")
+      .getPublicUrl(uniqueImageName);
+
+    // Set the image URL to the state
+    setImage(publicURL);
   };
 
+  // FUNCTION TO HANDLE SUBMITTING OF THE DATA
   const handleSubmit = async () => {
     const ownerId = user?.id;
 
@@ -49,7 +102,7 @@ const AddProductServiceScreen = () => {
         name,
         location,
         description: null,
-        image: null,
+        image: image || null,
         owner: ownerId,
       };
     } else if (type === "product") {
@@ -58,7 +111,7 @@ const AddProductServiceScreen = () => {
         description,
         price: parseFloat(price),
         stock: parseInt(stock),
-        image: null,
+        image: image || null,
         seller: ownerId,
         created_at: new Date(),
       };
@@ -67,6 +120,7 @@ const AddProductServiceScreen = () => {
         name,
         description,
         price: parseFloat(price),
+        image: image || null,
         duration: parseInt(duration),
         created_at: new Date(),
       };

@@ -10,6 +10,7 @@ import {
   Image,
   AppState,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -40,22 +41,6 @@ const SignUpScreen = () => {
   const handleLogin = () => {
     router.push("/(auth)/login");
   };
-
-  // async function signUpWithEmail() {
-  //   setLoading(true);
-  //   const {
-  //     data: { session },
-  //     error,
-  //   } = await supabase.auth.signUp({
-  //     email: email,
-  //     password: password,
-  //   });
-
-  //   if (error) Alert.alert(error.message);
-  //   if (!session)
-  //     Alert.alert("Please check your inbox for email verification!");
-  //   setLoading(false);
-  // }
 
   async function signUpWithEmail() {
     setLoading(true);
@@ -119,7 +104,13 @@ const SignUpScreen = () => {
       </View>
 
       <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
-        <Text style={styles.signUpButtonText}>CONTINUE</Text>
+        <Text style={styles.signUpButtonText}>
+          {loading ? (
+            <ActivityIndicator size={"small"} color={"#fff"} />
+          ) : (
+            "CONTINUE"
+          )}
+        </Text>
       </TouchableOpacity>
 
       <View style={styles.loginContainer}>
