@@ -44,6 +44,7 @@ export default function TabLayout() {
         name="(order)"
         options={{
           title: "Menu",
+          headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <MaterialCommunityIcons
               name="food-fork-drink"

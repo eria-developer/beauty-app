@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dimensions,
   Image,
@@ -14,13 +14,32 @@ import SearchInput from "@/components/SearchInput";
 import { FlashList } from "@shopify/flash-list";
 import FloatingCartIcon from "@/components/FloatingCart";
 import { useNavigation } from "@react-navigation/native";
+// import categoriesData from "./categories.json";
+import axios from "axios";
+
+const API_URL = "http://192.168.0.181:5000";
 
 const MenuScreen = () => {
   const [searchInput, setSearchInput] = useState("");
+  const [categories, setCategories] = useState([]);
   const navigation = useNavigation();
 
   const screenWidth = Dimensions.get("window").width;
   const containerMargin = 10;
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/categories`);
+      setCategories(response.data);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      // Handle error (e.g., show an alert to the user)
+    }
+  };
 
   // data for top items
   const topData = [
@@ -133,16 +152,30 @@ const MenuScreen = () => {
     </TouchableOpacity>
   );
 
-  // render recomended items
-  //   const renderRecommendedItem = ({ item }) => (
-  //     <View style={styles.recommendedItemCard}>
-  //       <Image source={{ uri: item.image }} style={styles.recommendedItemImage} />
-  //       <Text style={styles.recommendedItemText}>{item.name}</Text>
-  //     </View>
-  //   );
+  const renderCategory = ({ item }) => (
+    <TouchableOpacity
+      style={styles.featuredCategoryCard}
+      onPress={() =>
+        navigation.navigate("category-items", {
+          category: item.name,
+          categoryId: item.id,
+        })
+      }
+    >
+      <Image
+        source={{ uri: item.image }}
+        style={styles.featuredCategoryImage}
+      />
+      <LinearGradient
+        colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.7)"]}
+        style={styles.featuredCategoryGradient}
+      >
+        <Text style={styles.featuredCategoryText}>{item.name}</Text>
+      </LinearGradient>
+    </TouchableOpacity>
+  );
 
   return (
-    // <SafeAreaView style={styles.safeArea}>
     <LinearGradient colors={["#DFB7BF", "white"]} style={styles.background}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.container}>
@@ -190,13 +223,13 @@ const MenuScreen = () => {
             />
           </View>
 
-          {/* Featured categories section */}
+          {/* Categories section */}
           <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Featured Categories</Text>
+            <Text style={styles.sectionTitle}>Categories</Text>
             <FlashList
-              data={featuredProductsData}
-              renderItem={renderFeaturedCategory}
-              keyExtractor={(item) => item.name}
+              data={categories}
+              renderItem={renderCategory}
+              keyExtractor={(item) => item.id.toString()}
               estimatedItemSize={4}
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -207,7 +240,6 @@ const MenuScreen = () => {
       </ScrollView>
       <FloatingCartIcon />
     </LinearGradient>
-    // </SafeAreaView>
   );
 };
 
@@ -215,7 +247,7 @@ export default MenuScreen;
 
 const styles = StyleSheet.create({
   safeArea: {
-    flex: 1,
+    // flex: 1,
   },
   background: {
     flex: 1,
@@ -225,6 +257,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+    // flexGrow: 1,
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 40,
@@ -320,6 +353,41 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   featuredCategoryText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  categoriesContainer: {
+    paddingVertical: 10,
+  },
+  categoryCard: {
+    width: 160,
+    height: 200,
+    marginRight: 15,
+    borderRadius: 12,
+    overflow: "hidden",
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  categoryImage: {
+    width: "100%",
+    height: "100%",
+  },
+  categoryGradient: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: "50%",
+    justifyContent: "flex-end",
+    paddingBottom: 15,
+    paddingHorizontal: 10,
+  },
+  categoryText: {
     color: "white",
     fontSize: 18,
     fontWeight: "bold",

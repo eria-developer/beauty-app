@@ -2,45 +2,28 @@
   "categories": [
     {
       "id": 1,
-      "name": "Hair Products",
-      "description": "Products for hair care and styling.",
-      "image": "https://example.com/images/hair-products.jpg"
+      "name": "Hair Care",
+      "image": "https://img.freepik.com/free-photo/young-woman-getting-hair-care-treatment_23-2148850132.jpg?t=st=1725196341~exp=1725199941~hmac=08b3d3d4059ef74d947f5df5cf2a7c8b6824859c5826ea95e42399ba1a4b05ab&w=996"
     },
     {
       "id": 2,
       "name": "Skin Care",
-      "description": "Products for skin treatment and care.",
-      "image": "https://example.com/images/skin-care.jpg"
+      "image": "https://img.freepik.com/free-photo/small-plant-near-various-cosmetics-bottles_23-2147787958.jpg?t=st=1725195088~exp=1725198688~hmac=40a40b24ec0a9f4960ebbce68c6ec100ed6b43cc075efb42e807fd2b3482660f&w=996"
     },
     {
       "id": 3,
-      "name": "Nail Care",
-      "description": "Products for nail treatment and decoration.",
-      "image": "https://example.com/images/nail-care.jpg"
+      "name": "Fragrances",
+      "image": "https://img.freepik.com/free-photo/bottle-perfume-with-blue-top-that-says-perfume_1340-37998.jpg?t=st=1725195268~exp=1725198868~hmac=d529fd281df3d82988d0c090abfe6760b3e8466ec4e3f8f76659ba2b979ac923&w=740"
     },
     {
       "id": 4,
-      "name": "Hair Services",
-      "description": "Services for hair styling and treatment.",
-      "image": "https://example.com/images/hair-services.jpg"
-    },
-    {
-      "id": 5,
-      "name": "Skin Services",
-      "description": "Services for skin care and treatment.",
-      "image": "https://example.com/images/skin-services.jpg"
-    },
-    {
-      "id": 6,
-      "name": "Nail Services",
-      "description": "Services for nail care and decoration.",
-      "image": "https://example.com/images/nail-services.jpg"
+      "name": "Nail Care",
+      "image": "https://img.freepik.com/free-photo/close-up-hand-with-nail-art_23-2148217851.jpg?t=st=1725197342~exp=1725200942~hmac=7fdf1b0850f6a79e2ac9e22dcbf9a98d65b687b49718c3b7a8983be457bede5a&w=996"
     }
   ],
-
   "products": [
     {
-      "id": 1,
+      "id": "1",
       "categoryId": 1,
       "name": "Shampoo",
       "description": "Organic shampoo for all hair types.",
@@ -48,7 +31,7 @@
       "image": "https://example.com/images/shampoo.jpg"
     },
     {
-      "id": 2,
+      "id": "2",
       "categoryId": 1,
       "name": "Conditioner",
       "description": "Moisturizing conditioner.",
@@ -56,7 +39,7 @@
       "image": "https://example.com/images/conditioner.jpg"
     },
     {
-      "id": 3,
+      "id": "3",
       "categoryId": 2,
       "name": "Face Cream",
       "description": "Anti-aging face cream.",
@@ -64,38 +47,55 @@
       "image": "https://example.com/images/face-cream.jpg"
     },
     {
-      "id": 4,
+      "id": "4",
       "categoryId": 3,
       "name": "Nail Polish",
       "description": "Long-lasting nail polish.",
       "price": 5.99,
       "image": "https://example.com/images/nail-polish.jpg"
+    },
+    {
+      "id": "3081",
+      "categoryId": 1,
+      "name": "Friday project",
+      "description": "Nsjsjjsjssj",
+      "price": 25600,
+      "image": null,
+      "stock": 369
+    },
+    {
+      "id": "2fc2",
+      "categoryId": 1,
+      "name": "After ",
+      "description": "Jejejej",
+      "price": 26000,
+      "image": null,
+      "stock": 69
     }
   ],
-
   "services": [
     {
-      "id": 1,
+      "id": "1",
       "categoryId": 4,
       "name": "Haircut",
       "description": "Professional hair cutting service.",
-      "price": 20.0,
+      "price": 20,
       "image": "https://example.com/images/haircut.jpg"
     },
     {
-      "id": 2,
+      "id": "2",
       "categoryId": 5,
       "name": "Facial",
       "description": "Deep cleansing facial service.",
-      "price": 50.0,
+      "price": 50,
       "image": "https://example.com/images/facial.jpg"
     },
     {
-      "id": 3,
+      "id": "3",
       "categoryId": 6,
       "name": "Manicure",
       "description": "Full manicure service.",
-      "price": 30.0,
+      "price": 30,
       "image": "https://example.com/images/manicure.jpg"
     }
   ]
