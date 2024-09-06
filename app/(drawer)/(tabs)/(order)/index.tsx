@@ -1,9 +1,4 @@
-// import { Dimensions, Image, StyleSheet, Text, View } from "react-native";
-// import React, { useState } from "react";
-// import { Colors } from "@/constants/Colors";
-// import { LinearGradient } from "expo-linear-gradient";
-// import SearchInput from "@/components/SearchInput";
-// import { FlashList } from "@shopify/flash-list";
+import React, { useState } from "react";
 import {
   Dimensions,
   Image,
@@ -11,17 +6,18 @@ import {
   Text,
   View,
   ScrollView,
+  TouchableOpacity,
 } from "react-native";
-import React, { useState } from "react";
 import { Colors } from "@/constants/Colors";
 import { LinearGradient } from "expo-linear-gradient";
 import SearchInput from "@/components/SearchInput";
 import { FlashList } from "@shopify/flash-list";
-import { SafeAreaView } from "react-native-safe-area-context";
 import FloatingCartIcon from "@/components/FloatingCart";
+import { useNavigation } from "@react-navigation/native";
 
 const MenuScreen = () => {
   const [searchInput, setSearchInput] = useState("");
+  const navigation = useNavigation();
 
   const screenWidth = Dimensions.get("window").width;
   const containerMargin = 10;
@@ -117,9 +113,13 @@ const MenuScreen = () => {
     </View>
   );
 
-  // render featured categories
   const renderFeaturedCategory = ({ item }) => (
-    <View style={styles.featuredCategoryCard}>
+    <TouchableOpacity
+      style={styles.featuredCategoryCard}
+      onPress={() =>
+        navigation.navigate("category-items", { category: item.name })
+      }
+    >
       <Image
         source={{ uri: item.image }}
         style={styles.featuredCategoryImage}
@@ -130,16 +130,16 @@ const MenuScreen = () => {
       >
         <Text style={styles.featuredCategoryText}>{item.name}</Text>
       </LinearGradient>
-    </View>
+    </TouchableOpacity>
   );
 
   // render recomended items
-  const renderRecommendedItem = ({ item }) => (
-    <View style={styles.recommendedItemCard}>
-      <Image source={{ uri: item.image }} style={styles.recommendedItemImage} />
-      <Text style={styles.recommendedItemText}>{item.name}</Text>
-    </View>
-  );
+  //   const renderRecommendedItem = ({ item }) => (
+  //     <View style={styles.recommendedItemCard}>
+  //       <Image source={{ uri: item.image }} style={styles.recommendedItemImage} />
+  //       <Text style={styles.recommendedItemText}>{item.name}</Text>
+  //     </View>
+  //   );
 
   return (
     // <SafeAreaView style={styles.safeArea}>

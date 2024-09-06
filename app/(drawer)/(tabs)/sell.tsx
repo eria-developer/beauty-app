@@ -8,6 +8,7 @@ import {
   ScrollView,
   Image,
   Alert,
+  Platform,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { Colors } from "@/constants/Colors";
@@ -17,6 +18,10 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/providers/AuthProvider";
 import * as ImagePicker from "expo-image-picker";
 import uuid from "react-native-uuid";
+import * as FileSystem from "expo-file-system";
+import NetInfo from "@react-native-community/netinfo";
+import { randomUUID } from "expo-crypto";
+import { decode } from "base-64";
 
 const AddProductServiceScreen = () => {
   const [type, setType] = useState("product");
@@ -30,24 +35,14 @@ const AddProductServiceScreen = () => {
   const [image, setImage] = useState(null);
   const { user } = useAuth();
 
-  useEffect(() => {
-    console.log("Current user:", user);
-  }, [user]);
+  // useEffect(() => {
+  //   console.log("Current user:", user);
+  // }, [user]);
 
-  const handleImageUpload = async () => {
+  const pickImage = async () => {
     try {
-      console.log("Starting image upload process");
-
-      if (!user) {
-        console.error("User not authenticated");
-        Alert.alert("Error", "You must be logged in to upload images.");
-        return;
-      }
-
       const permissionResult =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
-      console.log("Permission result:", permissionResult);
-
       if (!permissionResult.granted) {
         Alert.alert(
           "Permission Denied",
@@ -56,78 +51,171 @@ const AddProductServiceScreen = () => {
         return;
       }
 
-      const pickerResult = await ImagePicker.launchImageLibraryAsync({
+      let result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
-        aspect: [4, 3],
+        aspect: [1, 1],
         quality: 1,
       });
 
-      console.log("Picker result:", pickerResult);
-
-      if (pickerResult.canceled) {
-        console.log("Image picking cancelled");
-        return;
+      if (!result.canceled && result.assets && result.assets[0]) {
+        setImage(result.assets[0].uri);
       }
-
-      const uniqueImageName = `${uuid.v4()}.jpg`;
-      console.log("Generated unique image name:", uniqueImageName);
-
-      const { data, error } = await supabase.storage
-        .from("products")
-        .upload(uniqueImageName, {
-          uri: pickerResult.assets[0].uri,
-          type: "image/jpeg",
-          name: uniqueImageName,
-        });
-
-      if (error) {
-        console.error("Supabase storage upload error:", error);
-        Alert.alert(
-          "Upload Error",
-          `Error uploading image: ${error.message}\nStatus Code: ${error.statusCode}`
-        );
-        return;
-      }
-
-      console.log("Supabase storage upload result:", data);
-
-      const { data: publicURLData, error: publicURLError } = supabase.storage
-        .from("products")
-        .getPublicUrl(uniqueImageName);
-
-      if (publicURLError) {
-        console.error("Error getting public URL:", publicURLError);
-        Alert.alert(
-          "URL Error",
-          `Error getting public URL: ${publicURLError.message}`
-        );
-        return;
-      }
-
-      console.log("Public URL data:", publicURLData);
-      setImage(publicURLData.publicUrl);
-      Alert.alert("Success", "Image uploaded successfully");
     } catch (error) {
-      console.error("Unexpected error during image upload:", error);
-      Alert.alert(
-        "Unexpected Error",
-        `An unexpected error occurred: ${error.message}`
-      );
+      console.error("Error picking image:", error);
+      Alert.alert("Error", "Failed to pick image");
     }
   };
 
+  const uploadImage = async (uri) => {
+    console.log("Starting avatar upload process");
+    try {
+      if (!uri?.startsWith("file://") && Platform.OS !== "web") {
+        console.error("Invalid file URI");
+        return null;
+      }
+
+      // let base64Image;
+      // if (Platform.OS === "web") {
+      //   const response = await fetch(uri);
+      //   const blob = await response.blob();
+      //   base64Image = await new Promise((resolve, reject) => {
+      //     const reader = new FileReader();
+      //     reader.onload = () => resolve(reader.result.split(",")[1]);
+      //     reader.onerror = (error) => reject(error);
+      //     reader.readAsDataURL(blob);
+      //   });
+      // } else {
+      let base64Image = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      // }
+
+      const fileName = `product-${randomUUID()}.jpg`;
+      const contentType = "image/jpeg";
+
+      const { data, error } = await supabase.storage
+        .from("products")
+        .upload(fileName, decode(base64Image), { contentType });
+
+      if (error) {
+        console.error("Supabase storage error:", error);
+        throw error;
+      }
+      console.log("File uploaded successfully, data:", data);
+
+      const { data: publicUrlData } = supabase.storage
+        .from("products")
+        .getPublicUrl(fileName);
+
+      return publicUrlData.publicUrl;
+    } catch (error) {
+      console.error("Error in uploadImage:", error);
+      return null;
+    }
+  };
+
+  // const handleSubmit = async () => {
+  //   try {
+  //     console.log("Starting submit process");
+
+  //     const ownerId = user?.id;
+  //     console.log("Owner ID:", ownerId);
+
+  //     if (!ownerId) {
+  //       console.error("User not logged in");
+  //       Alert.alert("Error", "User not logged in");
+  //       return;
+  //     }
+
+  //     let newItem;
+
+  //     if (type === "salon") {
+  //       newItem = {
+  //         name,
+  //         location,
+  //         description: null,
+  //         image: image || null,
+  //         owner: ownerId,
+  //       };
+  //     } else if (type === "product") {
+  //       newItem = {
+  //         name,
+  //         description,
+  //         price: parseFloat(price),
+  //         stock: parseInt(stock),
+  //         image: image || null,
+  //         seller: ownerId,
+  //         created_at: new Date(),
+  //         category: category,
+  //       };
+  //     } else if (type === "service") {
+  //       newItem = {
+  //         name,
+  //         description,
+  //         price: parseFloat(price),
+  //         image: image || null,
+  //         duration: parseInt(duration),
+  //         created_at: new Date(),
+  //         // category: category,
+  //       };
+  //     }
+
+  //     console.log("New item to be inserted:", newItem);
+
+  //     const { data, error } = await supabase
+  //       .from(
+  //         type === "salon"
+  //           ? "saloons"
+  //           : type === "product"
+  //           ? "products"
+  //           : "services"
+  //       )
+  //       .insert([newItem]);
+
+  //     if (error) {
+  //       console.error("Supabase insert error:", error);
+  //       Alert.alert("Insert Error", `Error inserting data: ${error.message}`);
+  //       return;
+  //     }
+
+  //     console.log("Supabase insert result:", data);
+  //     Alert.alert(
+  //       "Success",
+  //       `${type.charAt(0).toUpperCase() + type.slice(1)} added successfully`
+  //     );
+
+  //     // Reset form fields here if needed
+  //     setName("");
+  //     setDescription("");
+  //     setPrice("");
+  //     setStock("");
+  //     setDuration("");
+  //     setCategory("");
+  //     setLocation("");
+  //     setImage(null);
+  //   } catch (error) {
+  //     console.error("Unexpected error during submit:", error);
+  //     Alert.alert(
+  //       "Unexpected Error",
+  //       `An unexpected error occurred: ${error.message}`
+  //     );
+  //   }
+  // };
+
   const handleSubmit = async () => {
     try {
-      console.log("Starting submit process");
-
-      const ownerId = user?.id;
-      console.log("Owner ID:", ownerId);
-
-      if (!ownerId) {
-        console.error("User not logged in");
+      if (!user?.id) {
         Alert.alert("Error", "User not logged in");
         return;
+      }
+
+      let imageUrl = null;
+      if (image) {
+        imageUrl = await uploadImage(image);
+        if (!imageUrl) {
+          throw new Error("Failed to upload image");
+        }
       }
 
       let newItem;
@@ -137,8 +225,8 @@ const AddProductServiceScreen = () => {
           name,
           location,
           description: null,
-          image: image || null,
-          owner: ownerId,
+          image: imageUrl,
+          owner: user.id,
         };
       } else if (type === "product") {
         newItem = {
@@ -146,22 +234,21 @@ const AddProductServiceScreen = () => {
           description,
           price: parseFloat(price),
           stock: parseInt(stock),
-          image: image || null,
-          seller: ownerId,
+          image: imageUrl,
+          seller: user.id,
           created_at: new Date(),
+          category: category,
         };
       } else if (type === "service") {
         newItem = {
           name,
           description,
           price: parseFloat(price),
-          image: image || null,
+          image: imageUrl,
           duration: parseInt(duration),
           created_at: new Date(),
         };
       }
-
-      console.log("New item to be inserted:", newItem);
 
       const { data, error } = await supabase
         .from(
@@ -174,18 +261,15 @@ const AddProductServiceScreen = () => {
         .insert([newItem]);
 
       if (error) {
-        console.error("Supabase insert error:", error);
-        Alert.alert("Insert Error", `Error inserting data: ${error.message}`);
-        return;
+        throw error;
       }
 
-      console.log("Supabase insert result:", data);
       Alert.alert(
         "Success",
         `${type.charAt(0).toUpperCase() + type.slice(1)} added successfully`
       );
 
-      // Reset form fields here if needed
+      // Reset form fields
       setName("");
       setDescription("");
       setPrice("");
@@ -195,11 +279,8 @@ const AddProductServiceScreen = () => {
       setLocation("");
       setImage(null);
     } catch (error) {
-      console.error("Unexpected error during submit:", error);
-      Alert.alert(
-        "Unexpected Error",
-        `An unexpected error occurred: ${error.message}`
-      );
+      console.error("Error in handleSubmit:", error);
+      Alert.alert("Error", `Failed to add ${type}: ${error.message}`);
     }
   };
 
@@ -297,10 +378,7 @@ const AddProductServiceScreen = () => {
 
           <View style={styles.formGroup}>
             <Text style={styles.label}>Image</Text>
-            <TouchableOpacity
-              style={styles.imageUpload}
-              onPress={handleImageUpload}
-            >
+            <TouchableOpacity onPress={pickImage} style={styles.imageUpload}>
               {image ? (
                 <Image source={{ uri: image }} style={styles.uploadedImage} />
               ) : (
@@ -411,3 +489,296 @@ const styles = StyleSheet.create({
 });
 
 export default AddProductServiceScreen;
+
+// import React, { useState } from "react";
+// import {
+//   View,
+//   Text,
+//   TextInput,
+//   TouchableOpacity,
+//   StyleSheet,
+//   ScrollView,
+//   Image,
+//   Alert,
+//   Platform,
+// } from "react-native";
+// import { Colors } from "@/constants/Colors";
+// import { MaterialIcons } from "@expo/vector-icons";
+// import { LinearGradient } from "expo-linear-gradient";
+// import { supabase } from "@/lib/supabase";
+// import { useAuth } from "@/providers/AuthProvider";
+// import * as ImagePicker from "expo-image-picker";
+// import * as FileSystem from "expo-file-system";
+// import { randomUUID } from "expo-crypto";
+// import { decode } from "base-64";
+
+// const AddSalonScreen = () => {
+//   const [name, setName] = useState("");
+//   const [location, setLocation] = useState("");
+//   const [image, setImage] = useState(null);
+//   const { user } = useAuth();
+
+//   const pickImage = async () => {
+//     try {
+//       const permissionResult =
+//         await ImagePicker.requestMediaLibraryPermissionsAsync();
+//       if (!permissionResult.granted) {
+//         Alert.alert(
+//           "Permission Denied",
+//           "Permission to access camera roll is required!"
+//         );
+//         return;
+//       }
+
+//       let result = await ImagePicker.launchImageLibraryAsync({
+//         mediaTypes: ImagePicker.MediaTypeOptions.Images,
+//         allowsEditing: true,
+//         aspect: [1, 1],
+//         quality: 1,
+//       });
+
+//       if (!result.canceled && result.assets && result.assets[0]) {
+//         setImage(result.assets[0].uri);
+//         console.log("Image picked:", result.assets[0].uri);
+//       }
+//     } catch (error) {
+//       console.error("Error picking image:", error);
+//       Alert.alert("Error", "Failed to pick image");
+//     }
+//   };
+
+//   const uploadImage = async (uri) => {
+//     console.log("Starting image upload process");
+//     try {
+//       if (!uri) {
+//         throw new Error("No image URI provided");
+//       }
+
+//       let file;
+//       if (Platform.OS === "web") {
+//         const response = await fetch(uri);
+//         file = await response.blob();
+//       } else {
+//         const fileInfo = await FileSystem.getInfoAsync(uri);
+//         file = {
+//           uri: fileInfo.uri,
+//           type: `image/${uri.split(".").pop()}`,
+//           name: `salon-${randomUUID()}.${uri.split(".").pop()}`,
+//         };
+//       }
+
+//       const fileName =
+//         file.name || `salon-${randomUUID()}.${uri.split(".").pop()}`;
+//       const contentType = file.type || "image/jpeg";
+
+//       console.log(
+//         `Uploading to bucket: products, fileName: ${fileName}, contentType: ${contentType}`
+//       );
+//       const { data, error } = await supabase.storage
+//         .from("products")
+//         .upload(fileName, file, { contentType });
+
+//       if (error) {
+//         console.error("Supabase storage error:", error);
+//         throw error;
+//       }
+//       console.log("File uploaded successfully, data:", data);
+
+//       const { data: publicUrlData, error: publicUrlError } = supabase.storage
+//         .from("products")
+//         .getPublicUrl(fileName);
+
+//       if (publicUrlError) {
+//         console.error("Error getting public URL:", publicUrlError);
+//         throw publicUrlError;
+//       }
+
+//       console.log("Public URL:", publicUrlData.publicUrl);
+//       return publicUrlData.publicUrl;
+//     } catch (error) {
+//       console.error("Error in uploadImage:", error);
+//       throw error; // Rethrow to handle in the calling function
+//     }
+//   };
+
+//   const handleSubmit = async () => {
+//     try {
+//       if (!user?.id) {
+//         Alert.alert("Error", "User not logged in");
+//         return;
+//       }
+
+//       let imageUrl = null;
+//       if (image) {
+//         imageUrl = await uploadImage(image);
+//         if (!imageUrl) {
+//           throw new Error("Failed to upload image");
+//         }
+//       }
+
+//       const newSalon = {
+//         name,
+//         location,
+//         image: imageUrl,
+//         owner: user.id,
+//       };
+
+//       console.log("Inserting new salon:", newSalon);
+//       const { data, error } = await supabase.from("saloons").insert([newSalon]);
+
+//       if (error) {
+//         throw error;
+//       }
+
+//       console.log("Salon added successfully:", data);
+//       Alert.alert("Success", "Salon added successfully");
+
+//       // Reset form fields
+//       setName("");
+//       setLocation("");
+//       setImage(null);
+//     } catch (error) {
+//       console.error("Error in handleSubmit:", error);
+//       Alert.alert("Error", `Failed to add salon: ${error.message}`);
+//     }
+//   };
+
+//   return (
+//     <LinearGradient colors={["white", "#DFB7BF"]} style={styles.background}>
+//       <ScrollView contentContainerStyle={styles.scrollViewContent}>
+//         <View style={styles.container}>
+//           <Text style={styles.title}>Add New Salon</Text>
+
+//           <View style={styles.formGroup}>
+//             <Text style={styles.label}>Name</Text>
+//             <TextInput
+//               style={styles.input}
+//               value={name}
+//               onChangeText={setName}
+//               placeholder="Enter salon name"
+//               placeholderTextColor={Colors.light.primary}
+//             />
+//           </View>
+
+//           <View style={styles.formGroup}>
+//             <Text style={styles.label}>Location</Text>
+//             <TextInput
+//               style={styles.input}
+//               value={location}
+//               onChangeText={setLocation}
+//               placeholder="Enter salon location"
+//               placeholderTextColor={Colors.light.primary}
+//             />
+//           </View>
+
+//           <View style={styles.formGroup}>
+//             <Text style={styles.label}>Image</Text>
+//             <TouchableOpacity onPress={pickImage} style={styles.imageUpload}>
+//               {image ? (
+//                 <Image source={{ uri: image }} style={styles.uploadedImage} />
+//               ) : (
+//                 <View style={styles.uploadPlaceholder}>
+//                   <MaterialIcons
+//                     name="add-a-photo"
+//                     size={24}
+//                     color={Colors.light.rearText}
+//                   />
+//                   <Text style={styles.uploadText}>Upload Image</Text>
+//                 </View>
+//               )}
+//             </TouchableOpacity>
+//           </View>
+
+//           <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+//             <Text style={styles.submitButtonText}>Add Salon</Text>
+//           </TouchableOpacity>
+//         </View>
+//       </ScrollView>
+//     </LinearGradient>
+//   );
+// };
+
+// const styles = StyleSheet.create({
+//   background: {
+//     flex: 1,
+//   },
+//   scrollViewContent: {
+//     flexGrow: 1,
+//   },
+//   container: {
+//     flex: 1,
+//     padding: 20,
+//   },
+//   title: {
+//     fontSize: 28,
+//     fontWeight: "bold",
+//     color: Colors.light.primary,
+//     marginBottom: 20,
+//   },
+//   formGroup: {
+//     marginBottom: 20,
+//   },
+//   label: {
+//     fontSize: 16,
+//     fontWeight: "600",
+//     color: Colors.light.rearText,
+//     marginBottom: 5,
+//   },
+//   input: {
+//     backgroundColor: "rgba(255, 255, 255, 0.8)",
+//     borderWidth: 1,
+//     borderColor: Colors.light.primary,
+//     borderRadius: 8,
+//     paddingHorizontal: 10,
+//     paddingVertical: 8,
+//     fontSize: 16,
+//     color: Colors.light.primary,
+//   },
+//   textArea: {
+//     height: 100,
+//   },
+//   pickerContainer: {
+//     borderWidth: 1,
+//     borderColor: Colors.light.primary,
+//     borderRadius: 8,
+//   },
+//   picker: {
+//     height: 50,
+//     width: "100%",
+//   },
+//   imageUpload: {
+//     borderWidth: 1,
+//     borderColor: Colors.light.primary,
+//     borderRadius: 8,
+//     height: 150,
+//     justifyContent: "center",
+//     alignItems: "center",
+//     backgroundColor: "rgba(255, 255, 255, 0.8)",
+//   },
+//   uploadedImage: {
+//     width: "100%",
+//     height: "100%",
+//     borderRadius: 8,
+//   },
+//   uploadPlaceholder: {
+//     justifyContent: "center",
+//     alignItems: "center",
+//   },
+//   uploadText: {
+//     marginTop: 10,
+//     color: Colors.light.primary,
+//   },
+//   submitButton: {
+//     backgroundColor: Colors.light.primary,
+//     paddingVertical: 12,
+//     borderRadius: 8,
+//     alignItems: "center",
+//   },
+//   submitButtonText: {
+//     color: Colors.light.background,
+//     fontSize: 18,
+//     fontWeight: "600",
+//   },
+// });
+
+// export default AddSalonScreen;
