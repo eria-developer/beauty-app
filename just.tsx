@@ -1,104 +1,183 @@
-const uploadAvatar = async (uri) => {
-    // console.log("Starting avatar upload process");
-    try {
-      if (!uri?.startsWith("file://")) {
-        // console.log("Invalid file URI");
-        return null;
-      }
-
-      // console.log("Reading image file as base64");
-      const base64 = await FileSystem.readAsStringAsync(uri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-
-      const fileName = `avatar-${randomUUID()}.jpg`;
-      const contentType = "image/jpeg";
-
-      // console.log("Uploading file to Supabase storage");
-      const { data, error } = await supabase.storage
-        .from("avatars")
-        .upload(fileName, decode(base64), { contentType });
-
-      if (error) {
-        console.error("Supabase storage error:", error);
-        throw error;
-      }
-
-      // console.log("File uploaded successfully, data:", data);
-
-      // Get the public URL
-      const { data: publicUrlData } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(fileName);
-
-      // console.log("Public URL:", publicUrlData.publicUrl);
-      return publicUrlData.publicUrl;
-    } catch (error) {
-      console.error("Error in uploadAvatar:", error);
-      return null;
-    }
-  };
-
-
-
-  const handleSubmit = async () => {
-    if (!session?.user?.id) {
-      Toast.show({
-        type: "error",
-        text1: `User is not logged in`,
-        visibilityTime: 1000,
-      });
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      let avatarUrl = profile?.avatar_url;
-      if (avatar && avatar !== profile?.avatar_url) {
-        avatarUrl = await uploadAvatar(avatar);
-        if (!avatarUrl) {
-          throw new Error("Failed to upload avatar");
+{
+  "salons": [
+    {
+      "id": 1,
+      "name": "Luxury Salon",
+      "description": "Premium salon offering top-notch services.",
+      "location": "Downtown",
+      "services": [
+        {
+          "id": 1,
+          "name": "Haircut",
+          "price": 15000
+        },
+        {
+          "id": 2,
+          "name": "Manicure",
+          "price": 10000
         }
-      }
-
-      // Profile update
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .update({
-          full_name: fullName,
-          phone_number: phoneNumber,
-          address: address,
-          avatar_url: avatarUrl,
-        })
-        .eq("id", session.user.id);
-
-      if (profileError) throw profileError;
-
-      // Email update if changed
-      if (email !== session.user.email) {
-        const { error: emailError } = await supabase.auth.updateUser({
-          email: email,
-        });
-        if (emailError) throw emailError;
-      }
-
-      await updateProfile();
-
-      Toast.show({
-        type: "success",
-        text1: "Success",
-        text2: `Profile updated Successfully`,
-      });
-      router.back();
-    } catch (error) {
-      console.error("Error in handleSubmit:", error);
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: `${error?.message}`,
-      });
-    } finally {
-      setLoading(false);
+      ],
+      "products": [
+        {
+          "id": 1,
+          "name": "Shampoo",
+          "price": 20000,
+          "image": "https://example.com/shampoo.jpg"
+        },
+        {
+          "id": 2,
+          "name": "Conditioner",
+          "price": 15000,
+          "image": "https://example.com/conditioner.jpg"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Glamour Salon",
+      "description": "Affordable salon with quality services.",
+      "location": "Uptown",
+      "services": [
+        {
+          "id": 3,
+          "name": "Facial",
+          "price": 20000
+        },
+        {
+          "id": 4,
+          "name": "Pedicure",
+          "price": 12000
+        }
+      ],
+      "products": [
+        {
+          "id": 3,
+          "name": "Hair Gel",
+          "price": 10000,
+          "image": "https://example.com/hair-gel.jpg"
+        },
+        {
+          "id": 4,
+          "name": "Hair Spray",
+          "price": 18000,
+          "image": "https://example.com/hair-spray.jpg"
+        }
+      ]
     }
-  };
+  ],
+  "users": [
+    {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john@example.com",
+      "cart": [
+        {
+          "productId": 1,
+          "quantity": 2
+        },
+        {
+          "productId": 3,
+          "quantity": 1
+        }
+      ],
+      "orders": [
+        {
+          "orderId": 1,
+          "products": [
+            {
+              "productId": 2,
+              "quantity": 1,
+              "price": 15000
+            }
+          ],
+          "totalPrice": 15000,
+          "status": "Pending",
+          "createdAt": "2024-08-31T14:48:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Jane Smith",
+      "email": "jane@example.com",
+      "cart": [],
+      "orders": [
+        {
+          "orderId": 2,
+          "products": [
+            {
+              "productId": 1,
+              "quantity": 1,
+              "price": 20000
+            },
+            {
+              "productId": 4,
+              "quantity": 2,
+              "price": 36000
+            }
+          ],
+          "totalPrice": 56000,
+          "status": "Completed",
+          "createdAt": "2024-08-30T10:30:00.000Z"
+        }
+      ]
+    }
+  ],
+  "orders": [
+    {
+      "orderId": 1,
+      "userId": 1,
+      "products": [
+        {
+          "productId": 2,
+          "quantity": 1,
+          "price": 15000
+        }
+      ],
+      "totalPrice": 15000,
+      "status": "Pending",
+      "createdAt": "2024-08-31T14:48:00.000Z"
+    },
+    {
+      "orderId": 2,
+      "userId": 2,
+      "products": [
+        {
+          "productId": 1,
+          "quantity": 1,
+          "price": 20000
+        },
+        {
+          "productId": 4,
+          "quantity": 2,
+          "price": 36000
+        }
+      ],
+      "totalPrice": 56000,
+      "status": "Completed",
+      "createdAt": "2024-08-30T10:30:00.000Z"
+    }
+  ],
+  "categories": [
+    {
+      "name": "Perfumes",
+      "image":
+        "https://img.freepik.com/free-photo/bottle-perfume-with-purple-orange-background_1340-38051.jpg?ga=GA1.1.476787416.1724867277&semt=ais_hybrid",
+    },
+    {
+      "name": "Cosmetics",
+      "image":
+        "https://img.freepik.com/free-photo/creative-display-makeup-products_23-2150063088.jpg?t=st=1725197342~exp=1725200942~hmac=0c92b67a30e5d71ab52b08ffbc1dddfdc074a5d84df08fc0e30bfa3da6928c30&w=826",
+    },
+    {
+      "name": "Wigs",
+      "image":
+        "https://img.freepik.com/free-photo/black-woman-touches-her-curly-hair_633478-2354.jpg?t=st=1725197139~exp=1725200739~hmac=7a8bbd08994c54d8a935b0cf6455e7a4aab130937651bd3771e55a6ba936fe90&w=996",
+    },
+    {
+      "name": "Pedicure",
+      "image":
+        "https://img.freepik.com/free-photo/pedicure-process-home-salon-pedicure-foot-care-treatment-nail-process-professional-pedicures-master-blue-gloves-make-pedicure_343596-1601.jpg?t=st=1725197472~exp=1725201072~hmac=e60ce816cee17d969b35c0cdef91e19fa6878b911bfac8ceb2dd439c6b478b55&w=996",
+    }
+  ]
+}
