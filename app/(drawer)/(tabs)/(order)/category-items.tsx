@@ -122,8 +122,9 @@ import {
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import axios from "axios";
+import { API_URL } from "@/constants/Colors";
 
-const API_URL = "http://192.168.0.181:5000";
+// const API_URL = "http://192.168.0.181:5000";
 
 const CategoryProducts = () => {
   const [products, setProducts] = useState([]);
@@ -133,7 +134,7 @@ const CategoryProducts = () => {
 
   useEffect(() => {
     fetchProducts();
-  }, [categoryId]);
+  }, []);
 
   const fetchProducts = async () => {
     try {

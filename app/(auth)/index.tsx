@@ -7,81 +7,73 @@ import {
   StyleSheet,
   Dimensions,
   ScrollView,
-  Image,
-  AppState,
   Alert,
   ActivityIndicator,
 } from "react-native";
-import { AntDesign } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { Colors } from "@/constants/Colors";
-import { supabase } from "@/lib/supabase";
-
-AppState.addEventListener("change", (state) => {
-  if (state === "active") {
-    supabase.auth.startAutoRefresh();
-  } else {
-    supabase.auth.stopAutoRefresh();
-  }
-});
+import axios from "axios";
+import { API_URL } from "@/constants/Colors";
 
 const { width } = Dimensions.get("window");
 
 const SignUpScreen = () => {
-  const [username, setUsername] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSignUp = async () => {
-    await signUpWithEmail();
+    if (password !== confirmPassword) {
+      Alert.alert("Error", "Passwords do not match!");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axios.post(`${API_URL}/accounts/register/`, {
+        email: email,
+        first_name: firstName,
+        last_name: lastName,
+        password: password,
+        password2: confirmPassword,
+      });
+
+      Alert.alert("Success", "Account created successfully!");
+      setLoading(false);
+      router.push("/(drawer)/(tabs)/home");
+    } catch (error) {
+      console.error("Registration error details: ", error.toJSON()); // Full error details
+      const errorMessage =
+        error.response?.data?.message || "Registration failed!";
+      Alert.alert("Error", errorMessage);
+      setLoading(false);
+    }
   };
 
   const handleLogin = () => {
     router.push("/(auth)/login");
   };
 
-  async function signUpWithEmail() {
-    setLoading(true);
-    const {
-      data: { session },
-      error: signUpError,
-    } = await supabase.auth.signUp({
-      email: email,
-      password: password,
-    });
-
-    if (signUpError) {
-      Alert.alert(signUpError.message);
-      setLoading(false);
-      return;
-    } else {
-      router.push("/(drawer)/(tabs)/home");
-      setLoading(false);
-    }
-
-    // // Insert user details into the users table
-    // const { error: insertError } = await supabase
-    //   .from("users")
-    //   .insert([{ username: username, email: email }]);
-
-    // if (insertError) {
-    //   Alert.alert(insertError.message);
-    // } else {
-    //   router.push("/(drawer)/(tabs)/home");
-    // }
-
-    setLoading(false);
-  }
-
   return (
     <ScrollView style={styles.container}>
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Username"
-          value={username}
-          onChangeText={setUsername}
+          placeholder="FirstName"
+          value={firstName}
+          onChangeText={setFirstName}
+        />
+      </View>
+
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="LastName"
+          value={lastName}
+          onChangeText={setLastName}
         />
       </View>
 
@@ -101,6 +93,16 @@ const SignUpScreen = () => {
           placeholder="Password"
           value={password}
           onChangeText={setPassword}
+          secureTextEntry
+        />
+      </View>
+
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Confirm Password"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
           secureTextEntry
         />
       </View>
@@ -131,28 +133,6 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#fff",
   },
-  profilePicContainer: {
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  profilePic: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-  },
-  profilePicPlaceholder: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: "#f0f0f0",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  profilePicText: {
-    marginTop: 5,
-    color: Colors.light.primary,
-    fontWeight: "bold",
-  },
   inputContainer: {
     marginBottom: 20,
   },
@@ -161,37 +141,6 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.light.primary,
     paddingVertical: 10,
     fontSize: 16,
-  },
-  birthdayLabel: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 5,
-    color: "#555",
-  },
-  birthdayContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-  birthdayInput: {
-    width: width * 0.25,
-  },
-  termsContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderWidth: 1,
-    borderColor: Colors.light.primary,
-    marginRight: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  termsText: {
-    color: "#555",
   },
   signUpButton: {
     backgroundColor: Colors.light.primary,

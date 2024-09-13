@@ -26,3 +26,6 @@ export const Colors: any = {
     tabIconSelected: tintColorDark,
   },
 };
+
+// export const API_URL = "http://192.168.187.19:8000";
+export const API_URL = "https://beauty-app-backend.onrender.com";

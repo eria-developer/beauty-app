@@ -17,7 +17,7 @@ import { useNavigation } from "@react-navigation/native";
 // import categoriesData from "./categories.json";
 import axios from "axios";
 
-const API_URL = "http://192.168.0.181:5000";
+const API_URL = "http://192.168.225.19:5000";
 
 const MenuScreen = () => {
   const [searchInput, setSearchInput] = useState("");

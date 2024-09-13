@@ -28,7 +28,7 @@
       "name": "Shampoo",
       "description": "Organic shampoo for all hair types.",
       "price": 10.99,
-      "image": "https://example.com/images/shampoo.jpg"
+      "image": "https://img.freepik.com/free-vector/luxury-cosmetic-products-design_1284-35951.jpg?t=st=1725632166~exp=1725635766~hmac=5b14fee01293587d8db65262ee828efbf71e2bb5609c1446c94a37b773fb6445&w=740"
     },
     {
       "id": "2",
@@ -36,7 +36,7 @@
       "name": "Conditioner",
       "description": "Moisturizing conditioner.",
       "price": 12.99,
-      "image": "https://example.com/images/conditioner.jpg"
+      "image": "https://img.freepik.com/free-photo/green-canteen_1203-879.jpg?t=st=1725632209~exp=1725635809~hmac=1495bc7cfbf6e1587d0f1fbf618664d2507209eb7bb87b2cd2d2d1379a72375e&w=740"
     },
     {
       "id": "3",
@@ -44,7 +44,7 @@
       "name": "Face Cream",
       "description": "Anti-aging face cream.",
       "price": 25.99,
-      "image": "https://example.com/images/face-cream.jpg"
+      "image": "https://img.freepik.com/free-photo/smiley-woman-applying-face-cream-side-view_23-2149419774.jpg?t=st=1725632253~exp=1725635853~hmac=f94cb8ad23ed4e97a04577625ee8fb085d679fcbdd3d93f9d705dc565e606995&w=740"
     },
     {
       "id": "4",
@@ -52,7 +52,7 @@
       "name": "Nail Polish",
       "description": "Long-lasting nail polish.",
       "price": 5.99,
-      "image": "https://example.com/images/nail-polish.jpg"
+      "image": "https://img.freepik.com/free-vector/set-vector-illustrations-realistic-style-clean-bottles-with-nail-polish-different-colors_1441-641.jpg?t=st=1725632305~exp=1725635905~hmac=88554f11792c9c55b49090a86dfb22c8498852da046e11a08dc9d1f6ecb6fef8&w=740"
     },
     {
       "id": "3081",
@@ -80,7 +80,7 @@
       "name": "Haircut",
       "description": "Professional hair cutting service.",
       "price": 20,
-      "image": "https://example.com/images/haircut.jpg"
+      "image": "https://img.freepik.com/free-photo/young-african-american-man-visiting-barbershop_1157-47683.jpg?t=st=1725632343~exp=1725635943~hmac=9a8e52d3818ad97fd61aa6899bb274610ef5bf28f9fc3282665d32f0c5c5a664&w=740"
     },
     {
       "id": "2",
@@ -88,7 +88,7 @@
       "name": "Facial",
       "description": "Deep cleansing facial service.",
       "price": 50,
-      "image": "https://example.com/images/facial.jpg"
+      "image": "https://img.freepik.com/free-photo/cosmetologist-applying-mask-face-client-beauty-salon_1303-16776.jpg?t=st=1725632397~exp=1725635997~hmac=efbc89a5e0b5292f1135fd098782d224f908c2356f3522224144aa93638dc3ec&w=996"
     },
     {
       "id": "3",
@@ -96,7 +96,7 @@
       "name": "Manicure",
       "description": "Full manicure service.",
       "price": 30,
-      "image": "https://example.com/images/manicure.jpg"
+      "image": "https://img.freepik.com/free-photo/hands-with-beautiful-nails_23-2149936852.jpg?t=st=1725632426~exp=1725636026~hmac=a672811cded80cee902e5fd84cafc61697511ffe106a46eb8f3b2f41bcdd09bd&w=740"
     }
   ]
 }

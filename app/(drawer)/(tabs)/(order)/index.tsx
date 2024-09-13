@@ -16,8 +16,7 @@ import FloatingCartIcon from "@/components/FloatingCart";
 import { useNavigation } from "@react-navigation/native";
 // import categoriesData from "./categories.json";
 import axios from "axios";
-
-const API_URL = "http://192.168.0.181:5000";
+import { API_URL } from "@/constants/Colors";
 
 const MenuScreen = () => {
   const [searchInput, setSearchInput] = useState("");
