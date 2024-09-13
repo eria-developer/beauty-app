@@ -7,13 +7,15 @@ import {
   StyleSheet,
   Dimensions,
   ScrollView,
-  Alert,
   ActivityIndicator,
 } from "react-native";
 import { router } from "expo-router";
 import { Colors } from "@/constants/Colors";
 import axios from "axios";
 import { API_URL } from "@/constants/Colors";
+import Toast from "react-native-toast-message";
+import { saveUserData } from "@/utils/authHelpers";
+import { showToast } from "@/utils/toastConfig";
 
 const { width } = Dimensions.get("window");
 
@@ -27,7 +29,7 @@ const SignUpScreen = () => {
 
   const handleSignUp = async () => {
     if (password !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match!");
+      showToast("error", "Error", "Passwords do not match!");
       return;
     }
 
@@ -41,14 +43,31 @@ const SignUpScreen = () => {
         password2: confirmPassword,
       });
 
-      Alert.alert("Success", "Account created successfully!");
-      setLoading(false);
-      router.push("/(drawer)/(tabs)/home");
+      showToast("success", "Success", "Account created successfully!");
+
+      // Automatically log in the user
+      const loginResponse = await axios.post(`${API_URL}/accounts/login/`, {
+        email: email,
+        password: password,
+      });
+
+      if (loginResponse.data) {
+        await saveUserData(loginResponse.data);
+        router.push("/(drawer)/(tabs)/home");
+      } else {
+        showToast(
+          "error",
+          "Error",
+          "Auto-login failed. Please log in manually."
+        );
+        router.push("/(auth)/login");
+      }
     } catch (error) {
-      console.error("Registration error details: ", error.toJSON()); // Full error details
+      console.error("Registration error details: ", error.toJSON());
       const errorMessage =
         error.response?.data?.message || "Registration failed!";
-      Alert.alert("Error", errorMessage);
+      showToast("error", "Error", errorMessage);
+    } finally {
       setLoading(false);
     }
   };
@@ -62,7 +81,7 @@ const SignUpScreen = () => {
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          placeholder="FirstName"
+          placeholder="First Name"
           value={firstName}
           onChangeText={setFirstName}
         />
@@ -71,7 +90,7 @@ const SignUpScreen = () => {
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          placeholder="LastName"
+          placeholder="Last Name"
           value={lastName}
           onChangeText={setLastName}
         />
@@ -107,14 +126,16 @@ const SignUpScreen = () => {
         />
       </View>
 
-      <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
-        <Text style={styles.signUpButtonText}>
-          {loading ? (
-            <ActivityIndicator size={"small"} color={"#fff"} />
-          ) : (
-            "CONTINUE"
-          )}
-        </Text>
+      <TouchableOpacity
+        style={styles.signUpButton}
+        onPress={handleSignUp}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <Text style={styles.signUpButtonText}>CONTINUE</Text>
+        )}
       </TouchableOpacity>
 
       <View style={styles.loginContainer}>
@@ -123,6 +144,8 @@ const SignUpScreen = () => {
           <Text style={styles.loginLink}>Login</Text>
         </TouchableOpacity>
       </View>
+
+      <Toast />
     </ScrollView>
   );
 };

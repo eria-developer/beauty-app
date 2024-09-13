@@ -11,6 +11,8 @@ import "react-native-reanimated";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { AuthProvider } from "@/providers/AuthProvider";
+import { toastConfig } from "@/utils/toastConfig";
+import Toast from "react-native-toast-message";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -49,6 +51,7 @@ export default function RootLayout() {
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
         </Stack>
+        <Toast config={toastConfig} />
       </AuthProvider>
     </ThemeProvider>
   );
