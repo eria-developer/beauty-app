@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -5,26 +6,42 @@ import {
   SafeAreaView,
   Dimensions,
   TouchableOpacity,
+  Alert,
 } from "react-native";
-import React from "react";
 import { Link, router } from "expo-router";
 import { Colors } from "@/constants/Colors";
-import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/providers/AuthProvider";
+// import { logoutUser, isLoggedIn } from "@/utils/authUtils";
+import { logoutUser, isLoggedIn } from "@/utils/authHelpers";
 
-const more = () => {
+const More = () => {
+  const [userLoggedIn, setUserLoggedIn] = useState(false);
   const { session } = useAuth();
 
-  const handleLogOut = async () => {
-    const { error } = await supabase.auth.signOut();
+  useEffect(() => {
+    checkLoginStatus();
+  }, []);
 
-    if (error) {
-      console.error("Error logging out:", error.message);
-    } else {
+  const checkLoginStatus = async () => {
+    const loggedIn = await isLoggedIn();
+    setUserLoggedIn(loggedIn);
+  };
+
+  const handleLogOut = async () => {
+    try {
+      await logoutUser();
       console.log("Logged out successfully");
-      router.push("/(drawer)/(tabs)/home");
+      setUserLoggedIn(false);
+      router.replace("/(drawer)/(tabs)/home");
+    } catch (error) {
+      console.error("Error logging out:", error);
+      Alert.alert(
+        "Logout Error",
+        "An error occurred while logging out. Please try again."
+      );
     }
   };
+
   const linkItems = [
     { href: "/(drawer)/(more)/e-gift-card", text: "E-Gift card" },
     { href: "/(drawer)/(more)/track-order", text: "Track Order" },
@@ -49,7 +66,7 @@ const more = () => {
         </Link>
       ))}
 
-      {session && (
+      {userLoggedIn && (
         <View style={styles.linkWrapper}>
           <TouchableOpacity onPress={handleLogOut}>
             <View style={styles.linkItemCard}>
@@ -62,7 +79,7 @@ const more = () => {
   );
 };
 
-export default more;
+export default More;
 
 const styles = StyleSheet.create({
   container: {

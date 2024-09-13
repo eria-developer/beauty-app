@@ -1,6 +1,6 @@
 import { AntDesign } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -13,11 +13,22 @@ import { Colors } from "@/constants/Colors";
 import { LinearGradient } from "expo-linear-gradient";
 import { Session } from "@supabase/supabase-js";
 import { useAuth } from "@/providers/AuthProvider";
+import { isLoggedIn } from "@/utils/authHelpers";
 
 const { height, width } = Dimensions.get("window");
 
 const HalfScreenBackgroundLayout = () => {
   const { session, user, signOut } = useAuth();
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      const loggedInn = await isLoggedIn();
+      setLoggedIn(loggedInn);
+    };
+    checkAuthStatus();
+  }, []);
+
   return (
     <View style={styles.container}>
       <ImageBackground
@@ -57,7 +68,7 @@ const HalfScreenBackgroundLayout = () => {
           </TouchableOpacity>
 
           {/* login and register buttons  */}
-          {!session && (
+          {!loggedIn && (
             <View style={styles.registerAndLoginButtons}>
               <TouchableOpacity
                 style={styles.authButton}

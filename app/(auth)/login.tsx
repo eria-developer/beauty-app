@@ -16,17 +16,95 @@ import axios from "axios";
 import { router } from "expo-router";
 import { Colors } from "@/constants/Colors";
 import { API_URL } from "@/constants/Colors";
+import { saveUserData } from "@/utils/authHelpers";
 
 const { width } = Dimensions.get("window");
 
-const LoginScreen = ({ navigation }: any) => {
+const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    await signInWithEmail();
+    setLoading(true);
+    try {
+      console.log("Attempting login with email:", email);
+      const response = await axios.post(`${API_URL}/accounts/login/`, {
+        email,
+        password,
+      });
+
+      console.log("Login response:", response.data);
+
+      if (response.data) {
+        await saveUserData(response.data);
+        router.push("/(drawer)/(tabs)/home");
+      } else {
+        Alert.alert("Login failed", "Invalid email or password");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.error("Error response data:", error.response.data);
+        console.error("Error response status:", error.response.status);
+        console.error("Error response headers:", error.response.headers);
+
+        Alert.alert(
+          "Login failed",
+          error.response.data.message ||
+            `Server error: ${error.response.status}`
+        );
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error("Error request:", error.request);
+        Alert.alert(
+          "Login failed",
+          "No response from server. Please check your internet connection."
+        );
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.error("Error message:", error.message);
+        Alert.alert(
+          "Login failed",
+          `An unexpected error occurred: ${error.message}`
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // const handleLogin = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const response = await axios.post(`${API_URL}/accounts/login/`, {
+  //       email,
+  //       password,
+  //     });
+
+  //     if (response.data) {
+  //       await saveUserData(response.data); // Save the tokens
+  //       router.push("/(drawer)/(tabs)/home"); // Redirect after login
+  //     } else {
+  //       Alert.alert("Login failed", "Invalid email or password");
+  //     }
+  //   } catch (error) {
+  //     // Check if the error has a response (status code not in the 2xx range)
+  //     if (error.response) {
+  //       Alert.alert(
+  //         "Login failed",
+  //         error.response.data.message || "An error occurred during login"
+  //       );
+  //     } else {
+  //       Alert.alert("Login failed", "An unexpected error occurred");
+  //     }
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   async function signInWithEmail() {
     setLoading(true);
@@ -103,7 +181,7 @@ const LoginScreen = ({ navigation }: any) => {
 
       <View style={styles.signUpContainer}>
         <Text style={styles.signUpText}>Don't have an account yet? </Text>
-        <TouchableOpacity onPress={handleSignUp}>
+        <TouchableOpacity onPress={handleLogin}>
           <Text style={styles.signUpLink}>Sign Up</Text>
         </TouchableOpacity>
       </View>
