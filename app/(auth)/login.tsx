@@ -12,19 +12,12 @@ import {
   ActivityIndicator,
 } from "react-native";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import axios from "axios";
 import { router } from "expo-router";
 import { Colors } from "@/constants/Colors";
-import { supabase } from "@/lib/supabase";
+import { API_URL } from "@/constants/Colors";
 
 const { width } = Dimensions.get("window");
-
-AppState.addEventListener("change", (state) => {
-  if (state === "active") {
-    supabase.auth.startAutoRefresh();
-  } else {
-    supabase.auth.stopAutoRefresh();
-  }
-});
 
 const LoginScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState("");
@@ -37,15 +30,23 @@ const LoginScreen = ({ navigation }: any) => {
 
   async function signInWithEmail() {
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password,
-    });
+    try {
+      const response = await axios.post(`${API_URL}/accounts/login/`, {
+        email: email,
+        password: password,
+      });
 
-    if (error) {
-      Alert.alert(error.message);
-    } else {
-      router.push("/(drawer)/(tabs)/home");
+      console.log("Login response: ", response.data);
+
+      if (response.status === 200) {
+        Alert.alert("Success", "Login successful!");
+        router.push("/(drawer)/(tabs)/home");
+      } else {
+        Alert.alert("Login failed", "Please check your credentials.");
+      }
+    } catch (error) {
+      console.error("Login error details: ", error);
+      Alert.alert("Error", error.response?.data?.message || "Login failed!");
     }
 
     setLoading(false);
