@@ -68,7 +68,7 @@ const HalfScreenBackgroundLayout = () => {
           </Text>
           <TouchableOpacity
             style={styles.branchesButton}
-            onPress={() => router.push("/(drawer)/(tabs)/order")}
+            onPress={() => router.push("/(drawer)/(tabs)/(order)/")}
           >
             <Text style={styles.buttonText}>
               View All Saloons, Services and Products
