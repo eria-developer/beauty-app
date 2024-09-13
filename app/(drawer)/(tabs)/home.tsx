@@ -11,20 +11,22 @@ import {
 } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { LinearGradient } from "expo-linear-gradient";
-import { Session } from "@supabase/supabase-js";
-import { useAuth } from "@/providers/AuthProvider";
-import { isLoggedIn } from "@/utils/authHelpers";
+import { isLoggedIn, getUserData } from "@/utils/authHelpers";
 
 const { height, width } = Dimensions.get("window");
 
 const HalfScreenBackgroundLayout = () => {
-  const { session, user, signOut } = useAuth();
   const [loggedIn, setLoggedIn] = useState(false);
+  const [userData, setUserData] = useState(null);
 
   useEffect(() => {
     const checkAuthStatus = async () => {
       const loggedInn = await isLoggedIn();
       setLoggedIn(loggedInn);
+      if (loggedInn) {
+        const userInfo = await getUserData();
+        setUserData(userInfo);
+      }
     };
     checkAuthStatus();
   }, []);
@@ -55,6 +57,12 @@ const HalfScreenBackgroundLayout = () => {
 
       <LinearGradient colors={["white", "#DFB7BF"]} style={styles.background}>
         <View style={styles.contentContainer}>
+          {loggedIn && userData && (
+            <View style={styles.userInfoContainer}>
+              <Text style={styles.userInfoText}>User ID: {userData.id}</Text>
+              <Text style={styles.userInfoText}>Email: {userData.email}</Text>
+            </View>
+          )}
           <Text style={styles.contentText}>
             ORDER FIRST FROM YOUR FAVORITES
           </Text>
@@ -210,6 +218,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: "center",
     color: "#555",
+  },
+  userInfoContainer: {
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  userInfoText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: Colors.light.primary,
   },
 });
 

@@ -1,19 +1,30 @@
 import { Drawer } from "expo-router/drawer";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { DrawerContentScrollView, DrawerItem } from "@react-navigation/drawer";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router, usePathname } from "expo-router";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { Colors } from "@/constants/Colors";
 import CustomDrawerItem from "@/components/CustomDrawerItem";
+import { getUserData } from "@/utils/authHelpers";
 
 const CustomDrawerContent = (props: any) => {
   const pathname = usePathname();
+  const [userInfo, setUserInfo] = useState("");
+
+  const gettingUserInfo = async () => {
+    const userInformation = await getUserData();
+    setUserInfo(userInformation);
+  };
 
   useEffect(() => {
     console.log(pathname);
   }, [pathname]);
+
+  useEffect(() => {
+    gettingUserInfo();
+  }, []);
 
   return (
     <DrawerContentScrollView {...props}>
@@ -27,10 +38,10 @@ const CustomDrawerContent = (props: any) => {
           />
         </View>
         <View style={styles.nameContainer}>
-          <Text style={styles.name}>Talemwa Eria Jackson</Text>
+          <Text style={styles.name}>{userInfo?.full_name}</Text>
         </View>
         <View style={styles.emailContainer}>
-          <Text style={styles.email}>eriddeveloper@gmail.com</Text>
+          <Text style={styles.email}>{userInfo?.email}</Text>
         </View>
       </View>
 

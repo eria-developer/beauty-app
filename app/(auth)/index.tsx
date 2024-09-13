@@ -43,29 +43,25 @@ const SignUpScreen = () => {
         password2: confirmPassword,
       });
 
-      showToast("success", "Success", "Account created successfully!");
+      if (response.data && response.data.data) {
+        await saveUserData({
+          id: response.data.data.id, // Note: Make sure the API returns an id
+          email: response.data.data.email,
+          first_name: response.data.data.first_name,
+          last_name: response.data.data.last_name,
+          access_token: response.data.data.access_token,
+          refresh_token: response.data.data.refresh_token,
+        });
 
-      // Automatically log in the user
-      const loginResponse = await axios.post(`${API_URL}/accounts/login/`, {
-        email: email,
-        password: password,
-      });
-
-      if (loginResponse.data) {
-        await saveUserData(loginResponse.data);
-        router.push("/(drawer)/(tabs)/home");
+        showToast("success", "Success", response.data.message || "Registered successfully!");
+        router.replace("/(drawer)/(tabs)/home");
       } else {
-        showToast(
-          "error",
-          "Error",
-          "Auto-login failed. Please log in manually."
-        );
-        router.push("/(auth)/login");
+        throw new Error("Unexpected response structure");
       }
     } catch (error) {
-      console.error("Registration error details: ", error.toJSON());
+      console.error("Registration error details: ", error);
       const errorMessage =
-        error.response?.data?.message || "Registration failed!";
+        error.response?.data?.message || error.message || "Registration failed!";
       showToast("error", "Error", errorMessage);
     } finally {
       setLoading(false);

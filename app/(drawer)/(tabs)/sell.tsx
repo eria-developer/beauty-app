@@ -19,13 +19,21 @@ import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
 import { API_URL } from "@/constants/Colors";
 import { showToast } from "@/utils/toastConfig";
+import {
+  getAccessToken,
+  refreshAccessToken,
+  getUserId,
+} from "@/utils/authHelpers";
+import { extractUserIdFromToken } from "@/utils/tokenUtils";
+// import { getUserId } from "@/utils/authHelpers";
+// import { getAccessToken, refreshAccessToken } from "@/utils/authHelpers";
 
 const AddProductServiceScreen = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState("perfumes");
   const [image, setImage] = useState(null);
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -35,21 +43,7 @@ const AddProductServiceScreen = () => {
     fetchCategories();
   }, []);
 
-  const fetchCategories = async () => {
-    setIsCategoryLoading(true);
-    try {
-      const response = await axios.get(`${API_URL}/categories`);
-      setCategories(response.data);
-      setCategory(
-        response.data.length > 0 ? response.data[0].id.toString() : ""
-      );
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-      Alert.alert("Error", "Failed to fetch categories");
-    } finally {
-      setIsCategoryLoading(false);
-    }
-  };
+  const fetchCategories = async () => {};
 
   const pickImage = async () => {
     try {
@@ -82,22 +76,60 @@ const AddProductServiceScreen = () => {
   const handleSubmit = async () => {
     setIsLoading(true);
     try {
+      // Retrieve the authentication token
+      let token = await getAccessToken();
+
+      if (!token) {
+        console.log("No token found, attempting to refresh...");
+        token = await refreshAccessToken();
+      }
+
+      if (!token) {
+        throw new Error("Failed to retrieve or refresh authentication token");
+      }
+
+      // Retrieve the user ID
+      let userId;
+      try {
+        userId = await getUserId();
+      } catch (error) {
+        console.error("Error retrieving user ID:", error);
+        throw new Error("Failed to retrieve user ID. Please log in again.");
+      }
+
+      // Log the data before appending to FormData
+      console.log("Data being submitted:");
+      console.log("Category:", category);
+      console.log("Name:", name);
+      console.log("Description:", description);
+      console.log("Price:", price);
+      console.log("Stock:", stock);
+      console.log("Seller:", userId);
+
+      if (image) {
+        console.log("Image URI:", image.uri);
+      } else {
+        console.log("No image selected.");
+      }
+
       const formData = new FormData();
-      formData.append("categoryId", category);
+      formData.append("category", category);
       formData.append("name", name);
       formData.append("description", description);
       formData.append("price", price);
       formData.append("stock", stock);
+      formData.append("seller", userId);
 
       if (image) {
-        formData.append("image", {
+        const imageFile = {
           uri:
             Platform.OS === "ios"
               ? image.uri.replace("file://", "")
               : image.uri,
           type: "image/jpeg",
           name: "product_image.jpg",
-        });
+        };
+        formData.append("image", imageFile);
       }
 
       const response = await axios.post(
@@ -106,6 +138,7 @@ const AddProductServiceScreen = () => {
         {
           headers: {
             "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -122,7 +155,13 @@ const AddProductServiceScreen = () => {
       setImage(null);
     } catch (error) {
       console.error("Error in handleSubmit:", error);
-      showToast("error", "Error", `Failed to add product: ${error.message}`);
+      let errorMessage = "Failed to add product";
+      if (error.response && error.response.data) {
+        errorMessage += `: ${JSON.stringify(error.response.data)}`;
+      } else if (error.message) {
+        errorMessage += `: ${error.message}`;
+      }
+      showToast("error", "Error", errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -178,9 +217,13 @@ const AddProductServiceScreen = () => {
               <View style={styles.pickerContainer}>
                 <Picker
                   selectedValue={category}
-                  onValueChange={setCategory}
+                  onValueChange={(itemValue, itemIndex) => {
+                    setCategory(itemValue);
+                    console.log("Selected Category:", itemValue);
+                  }}
                   style={styles.picker}
                 >
+                  <Picker.Item label="Select a Category" value="" />
                   <Picker.Item
                     key="perfumes"
                     label="Perfumes"
@@ -193,7 +236,7 @@ const AddProductServiceScreen = () => {
                   />
                   <Picker.Item
                     key="bodysprays"
-                    label="Body sprays"
+                    label="Body Sprays"
                     value="bodysprays"
                   />
                 </Picker>

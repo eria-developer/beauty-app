@@ -7,8 +7,6 @@ import {
   StyleSheet,
   Dimensions,
   ScrollView,
-  AppState,
-  Alert,
   ActivityIndicator,
 } from "react-native";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
@@ -29,119 +27,35 @@ const LoginScreen = () => {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      console.log("Attempting login with email:", email);
       const response = await axios.post(`${API_URL}/accounts/login/`, {
         email,
         password,
       });
 
-      console.log("Login response:", response.data);
-
       if (response.data) {
-        await saveUserData(response.data);
+        await saveUserData({
+          id: response.data.id,
+          email: response.data.email,
+          full_name: response.data.full_name,
+          access_token: response.data.access_token,
+          refresh_token: response.data.refresh_token,
+        });
+        showToast("success", "Success", "Logged in successfully!");
         router.push("/(drawer)/(tabs)/home");
       } else {
-        // Alert.alert("Login failed", "Invalid email or password");
         showToast("error", "Error", "Invalid email or password!");
       }
     } catch (error) {
       console.error("Login error:", error);
-
-      if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
-        console.error("Error response data:", error.response.data);
-        console.error("Error response status:", error.response.status);
-        console.error("Error response headers:", error.response.headers);
-
-        Alert.alert(
-          "Login failed",
-          error.response.data.message ||
-            `Server error: ${error.response.status}`
-        );
-      } else if (error.request) {
-        // The request was made but no response was received
-        console.error("Error request:", error.request);
-        // Alert.alert(
-        //   "Login failed",
-        //   "No response from server. Please check your internet connection."
-        // );
-        showToast(
-          "error",
-          "Error",
-          "No response from server. Please check your internet connection."
-        );
-      } else {
-        // Something happened in setting up the request that triggered an Error
-        console.error("Error message:", error.message);
-        // Alert.alert(
-        //   "Login failed",
-        //   `An unexpected error occurred: ${error.message}`
-        // );
-        showToast(
-          "error",
-          "Login failed",
-          `An unexpected error occurred: ${error.message}`
-        );
-      }
+      showToast(
+        "error",
+        "Login failed",
+        error.response?.data?.message || "An unexpected error occurred"
+      );
     } finally {
       setLoading(false);
     }
   };
-
-  // const handleLogin = async () => {
-  //   setLoading(true);
-  //   try {
-  //     const response = await axios.post(`${API_URL}/accounts/login/`, {
-  //       email,
-  //       password,
-  //     });
-
-  //     if (response.data) {
-  //       await saveUserData(response.data); // Save the tokens
-  //       router.push("/(drawer)/(tabs)/home"); // Redirect after login
-  //     } else {
-  //       Alert.alert("Login failed", "Invalid email or password");
-  //     }
-  //   } catch (error) {
-  //     // Check if the error has a response (status code not in the 2xx range)
-  //     if (error.response) {
-  //       Alert.alert(
-  //         "Login failed",
-  //         error.response.data.message || "An error occurred during login"
-  //       );
-  //     } else {
-  //       Alert.alert("Login failed", "An unexpected error occurred");
-  //     }
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  async function signInWithEmail() {
-    setLoading(true);
-    try {
-      const response = await axios.post(`${API_URL}/accounts/login/`, {
-        email: email,
-        password: password,
-      });
-
-      console.log("Login response: ", response.data);
-
-      if (response.status === 200) {
-        // Alert.alert("Success", "Login successful!");
-        showToast("success", "Success", "Logged in successfully!");
-        router.push("/(drawer)/(tabs)/home");
-      } else {
-        Alert.alert("Login failed", "Please check your credentials.");
-      }
-    } catch (error) {
-      console.error("Login error details: ", error);
-      Alert.alert("Error", error.response?.data?.message || "Login failed!");
-    }
-
-    setLoading(false);
-  }
 
   const handleForgotPassword = () => {
     console.log("Forgot password pressed");
@@ -194,7 +108,7 @@ const LoginScreen = () => {
 
       <View style={styles.signUpContainer}>
         <Text style={styles.signUpText}>Don't have an account yet? </Text>
-        <TouchableOpacity onPress={handleLogin}>
+        <TouchableOpacity onPress={handleSignUp}>
           <Text style={styles.signUpLink}>Sign Up</Text>
         </TouchableOpacity>
       </View>
