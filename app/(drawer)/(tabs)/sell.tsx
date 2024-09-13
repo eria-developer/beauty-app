@@ -17,39 +17,31 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
-
-const API_URL = "http://192.168.0.181:5000";
+import { API_URL } from "@/constants/Colors";
+import { showToast } from "@/utils/toastConfig";
 
 const AddProductServiceScreen = () => {
-  const [type, setType] = useState("product");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
-  const [duration, setDuration] = useState("");
   const [category, setCategory] = useState("");
   const [image, setImage] = useState(null);
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isCategoryLoading, setIsCategoryLoading] = useState(false);
-  const [isImageUploading, setIsImageUploading] = useState(false);
 
   useEffect(() => {
     fetchCategories();
-  }, [type]);
+  }, []);
 
   const fetchCategories = async () => {
     setIsCategoryLoading(true);
     try {
       const response = await axios.get(`${API_URL}/categories`);
-      const filteredCategories = response.data.filter((cat) =>
-        type === "product"
-          ? cat.name.includes("Products")
-          : cat.name.includes("Services")
-      );
-      setCategories(filteredCategories);
+      setCategories(response.data);
       setCategory(
-        filteredCategories.length > 0 ? filteredCategories[0].id.toString() : ""
+        response.data.length > 0 ? response.data[0].id.toString() : ""
       );
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -79,77 +71,58 @@ const AddProductServiceScreen = () => {
       });
 
       if (!result.canceled && result.assets && result.assets[0]) {
-        setIsImageUploading(true);
-        const uploadedImageUrl = await uploadImage(result.assets[0].uri);
-        setImage(uploadedImageUrl);
-        setIsImageUploading(false);
+        setImage(result.assets[0]);
       }
     } catch (error) {
       console.error("Error picking image:", error);
-      Alert.alert("Error", "Failed to pick or upload image");
-      setIsImageUploading(false);
-    }
-  };
-
-  const uploadImage = async (uri) => {
-    try {
-      const formData = new FormData();
-      formData.append("image", {
-        uri: Platform.OS === "ios" ? uri.replace("file://", "") : uri,
-        type: "image/jpeg",
-        name: "image.jpg",
-      });
-
-      const response = await axios.post(`${API_URL}/upload`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      return response.data.imageUrl;
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      throw new Error("Failed to upload image");
+      Alert.alert("Error", "Failed to pick image");
     }
   };
 
   const handleSubmit = async () => {
     setIsLoading(true);
     try {
-      let newItem = {
-        categoryId: parseInt(category),
-        name,
-        description,
-        price: parseFloat(price),
-        image,
-      };
+      const formData = new FormData();
+      formData.append("categoryId", category);
+      formData.append("name", name);
+      formData.append("description", description);
+      formData.append("price", price);
+      formData.append("stock", stock);
 
-      if (type === "product") {
-        newItem.stock = parseInt(stock);
-      } else if (type === "service") {
-        newItem.duration = parseInt(duration);
+      if (image) {
+        formData.append("image", {
+          uri:
+            Platform.OS === "ios"
+              ? image.uri.replace("file://", "")
+              : image.uri,
+          type: "image/jpeg",
+          name: "product_image.jpg",
+        });
       }
 
-      const endpoint = type === "product" ? "/products" : "/services";
-      const response = await axios.post(`${API_URL}${endpoint}`, newItem);
-
-      console.log("Added item:", response.data);
-      Alert.alert(
-        "Success",
-        `${type.charAt(0).toUpperCase() + type.slice(1)} added successfully`
+      const response = await axios.post(
+        `${API_URL}/products/products/`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
+
+      console.log("Added product:", response.data);
+      showToast("success", "Success", "Product added successfully");
 
       // Reset form fields
       setName("");
       setDescription("");
       setPrice("");
       setStock("");
-      setDuration("");
       setCategory("");
       setImage(null);
     } catch (error) {
       console.error("Error in handleSubmit:", error);
-      Alert.alert("Error", `Failed to add ${type}: ${error.message}`);
+      showToast("error", "Error", `Failed to add product: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -159,23 +132,7 @@ const AddProductServiceScreen = () => {
     <LinearGradient colors={["white", "#DFB7BF"]} style={styles.background}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.container}>
-          <Text style={styles.title}>
-            Add New {type.charAt(0).toUpperCase() + type.slice(1)}
-          </Text>
-
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Type</Text>
-            <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={type}
-                onValueChange={(itemValue) => setType(itemValue)}
-                style={styles.picker}
-              >
-                <Picker.Item label="Product" value="product" />
-                <Picker.Item label="Service" value="service" />
-              </Picker>
-            </View>
-          </View>
+          <Text style={styles.title}>Add New Product</Text>
 
           <View style={styles.formGroup}>
             <Text style={styles.label}>Name</Text>
@@ -183,7 +140,7 @@ const AddProductServiceScreen = () => {
               style={styles.input}
               value={name}
               onChangeText={setName}
-              placeholder={`Enter ${type} name`}
+              placeholder="Enter product name"
               placeholderTextColor={Colors.light.primary}
             />
           </View>
@@ -194,7 +151,7 @@ const AddProductServiceScreen = () => {
               style={[styles.input, styles.textArea]}
               value={description}
               onChangeText={setDescription}
-              placeholder={`Describe your ${type}`}
+              placeholder="Describe your product"
               placeholderTextColor={Colors.light.primary}
               multiline
               numberOfLines={4}
@@ -224,53 +181,46 @@ const AddProductServiceScreen = () => {
                   onValueChange={setCategory}
                   style={styles.picker}
                 >
-                  {categories.map((cat) => (
-                    <Picker.Item
-                      key={cat.id}
-                      label={cat.name}
-                      value={cat.id.toString()}
-                    />
-                  ))}
+                  <Picker.Item
+                    key="perfumes"
+                    label="Perfumes"
+                    value="perfumes"
+                  />
+                  <Picker.Item
+                    key="vaselines"
+                    label="Vaselines"
+                    value="vaselines"
+                  />
+                  <Picker.Item
+                    key="bodysprays"
+                    label="Body sprays"
+                    value="bodysprays"
+                  />
                 </Picker>
               </View>
             )}
           </View>
 
-          {type === "product" && (
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Stock</Text>
-              <TextInput
-                style={styles.input}
-                value={stock}
-                onChangeText={setStock}
-                placeholder="Enter stock quantity"
-                placeholderTextColor={Colors.light.primary}
-                keyboardType="numeric"
-              />
-            </View>
-          )}
-
-          {type === "service" && (
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Duration (minutes)</Text>
-              <TextInput
-                style={styles.input}
-                value={duration}
-                onChangeText={setDuration}
-                placeholder="Enter service duration"
-                placeholderTextColor={Colors.light.primary}
-                keyboardType="numeric"
-              />
-            </View>
-          )}
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Stock</Text>
+            <TextInput
+              style={styles.input}
+              value={stock}
+              onChangeText={setStock}
+              placeholder="Enter stock quantity"
+              placeholderTextColor={Colors.light.primary}
+              keyboardType="numeric"
+            />
+          </View>
 
           <View style={styles.formGroup}>
             <Text style={styles.label}>Image</Text>
             <TouchableOpacity onPress={pickImage} style={styles.imageUpload}>
-              {isImageUploading ? (
-                <ActivityIndicator size="large" color={Colors.light.primary} />
-              ) : image ? (
-                <Image source={{ uri: image }} style={styles.uploadedImage} />
+              {image ? (
+                <Image
+                  source={{ uri: image.uri }}
+                  style={styles.uploadedImage}
+                />
               ) : (
                 <View style={styles.uploadPlaceholder}>
                   <MaterialIcons
@@ -292,9 +242,7 @@ const AddProductServiceScreen = () => {
             {isLoading ? (
               <ActivityIndicator size="small" color={Colors.light.background} />
             ) : (
-              <Text style={styles.submitButtonText}>
-                Add {type.charAt(0).toUpperCase() + type.slice(1)}
-              </Text>
+              <Text style={styles.submitButtonText}>Add Product</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -342,6 +290,7 @@ const styles = StyleSheet.create({
   textArea: {
     height: 100,
   },
+  disabledButton: {},
   pickerContainer: {
     borderWidth: 1,
     borderColor: Colors.light.primary,
