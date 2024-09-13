@@ -54,9 +54,9 @@ export const showToast = (type, title, message) => {
     text1: title,
     text2: message,
     position: "top",
-    visibilityTime: 2500,
+    visibilityTime: 3000,
     autoHide: true,
-    topOffset: 50,
+    topOffset: 80,
     bottomOffset: 0,
   });
 };

@@ -13,6 +13,7 @@ import { Colors } from "@/constants/Colors";
 import { useAuth } from "@/providers/AuthProvider";
 // import { logoutUser, isLoggedIn } from "@/utils/authUtils";
 import { logoutUser, isLoggedIn } from "@/utils/authHelpers";
+import { showToast } from "@/utils/toastConfig";
 
 const More = () => {
   const [userLoggedIn, setUserLoggedIn] = useState(false);
@@ -33,6 +34,7 @@ const More = () => {
       console.log("Logged out successfully");
       setUserLoggedIn(false);
       router.replace("/(drawer)/(tabs)/home");
+      showToast("success", "Logged out", "You have logged out successfully");
     } catch (error) {
       console.error("Error logging out:", error);
       Alert.alert(

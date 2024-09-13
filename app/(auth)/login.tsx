@@ -17,6 +17,7 @@ import { router } from "expo-router";
 import { Colors } from "@/constants/Colors";
 import { API_URL } from "@/constants/Colors";
 import { saveUserData } from "@/utils/authHelpers";
+import { showToast } from "@/utils/toastConfig";
 
 const { width } = Dimensions.get("window");
 
@@ -40,7 +41,8 @@ const LoginScreen = () => {
         await saveUserData(response.data);
         router.push("/(drawer)/(tabs)/home");
       } else {
-        Alert.alert("Login failed", "Invalid email or password");
+        // Alert.alert("Login failed", "Invalid email or password");
+        showToast("error", "Error", "Invalid email or password!");
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -60,14 +62,24 @@ const LoginScreen = () => {
       } else if (error.request) {
         // The request was made but no response was received
         console.error("Error request:", error.request);
-        Alert.alert(
-          "Login failed",
+        // Alert.alert(
+        //   "Login failed",
+        //   "No response from server. Please check your internet connection."
+        // );
+        showToast(
+          "error",
+          "Error",
           "No response from server. Please check your internet connection."
         );
       } else {
         // Something happened in setting up the request that triggered an Error
         console.error("Error message:", error.message);
-        Alert.alert(
+        // Alert.alert(
+        //   "Login failed",
+        //   `An unexpected error occurred: ${error.message}`
+        // );
+        showToast(
+          "error",
           "Login failed",
           `An unexpected error occurred: ${error.message}`
         );
@@ -117,7 +129,8 @@ const LoginScreen = () => {
       console.log("Login response: ", response.data);
 
       if (response.status === 200) {
-        Alert.alert("Success", "Login successful!");
+        // Alert.alert("Success", "Login successful!");
+        showToast("success", "Success", "Logged in successfully!");
         router.push("/(drawer)/(tabs)/home");
       } else {
         Alert.alert("Login failed", "Please check your credentials.");
