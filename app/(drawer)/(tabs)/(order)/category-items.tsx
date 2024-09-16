@@ -40,24 +40,23 @@ const CategoryProducts = () => {
   };
 
   const renderProduct = ({ item }) => {
-    // Check if the image is a relative path and prepend the API_URL
-    const imageUrl = item.image ? `${API_URL}${item.image}` : null;
+    const imageUrl = item.image;
 
     return (
       <TouchableOpacity
         style={styles.productCard}
         onPress={() =>
-          navigation.navigate("product-detail", { productId: item.id })
+          navigation.navigate("product-details", { productId: item.id })
         }
       >
         {imageUrl ? (
           <Image
-            source={{ uri: item.image }}
+            source={{ uri: imageUrl }}
             style={styles.productImage}
             onError={(e) =>
               console.log("Product image load error:", e.nativeEvent.error)
             }
-            defaultSource={require("@/assets/images/placeholder.jpg")} // Fallback image in case of error
+            defaultSource={require("@/assets/images/placeholder.jpg")}
           />
         ) : (
           <View style={styles.placeholderImage}>

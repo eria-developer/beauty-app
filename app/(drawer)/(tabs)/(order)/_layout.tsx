@@ -30,6 +30,13 @@ const _layout = () => {
           title: "Category Products",
         }}
       />
+      <Stack.Screen
+        name="product-details"
+        options={{
+          headerShown: true,
+          title: "Product Details",
+        }}
+      />
     </Stack>
   );
 };
