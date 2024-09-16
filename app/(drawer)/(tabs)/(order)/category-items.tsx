@@ -1,146 +1,37 @@
-// import React, { useEffect, useState } from "react";
-// import {
-//   View,
-//   Text,
-//   FlatList,
-//   Image,
-//   StyleSheet,
-//   TouchableOpacity,
-// } from "react-native";
-// import { useRoute } from "@react-navigation/native";
-// import { supabase } from "@/lib/supabase";
-
-// const CategoryItemsScreen = () => {
-//   const [items, setItems] = useState([]);
-//   const route = useRoute();
-//   const { category } = route.params;
-
-//   useEffect(() => {
-//     fetchCategoryItems();
-//   }, []);
-
-//   const fetchCategoryItems = async () => {
-//     try {
-//       // Fetch products
-//       const { data: products, error: productsError } = await supabase
-//         .from("products")
-//         .select("*")
-//         .eq("category", "perfumes");
-
-//       if (productsError) throw productsError;
-
-//       // Fetch services
-//       const { data: services, error: servicesError } = await supabase
-//         .from("services")
-//         .select("*")
-//         .eq("category", category);
-
-//       if (servicesError) throw servicesError;
-
-//       // Combine and set items
-//       setItems([...products, ...services]);
-//     } catch (error) {
-//       console.error("Error fetching category items:", error);
-//     }
-//   };
-
-//   const renderItem = ({ item }) => (
-//     <TouchableOpacity style={styles.itemCard}>
-//       <Image source={{ uri: item.image }} style={styles.itemImage} />
-//       <View style={styles.itemInfo}>
-//         <Text style={styles.itemName}>{item.name}</Text>
-//         <Text style={styles.itemPrice}>${item.price}</Text>
-//       </View>
-//     </TouchableOpacity>
-//   );
-
-//   return (
-//     <View style={styles.container}>
-//       <Text style={styles.title}>{category}</Text>
-//       <FlatList
-//         data={items}
-//         renderItem={renderItem}
-//         keyExtractor={(item) => item.id.toString()}
-//         numColumns={2}
-//         contentContainerStyle={styles.listContainer}
-//       />
-//     </View>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     padding: 10,
-//     backgroundColor: "#fff",
-//   },
-//   title: {
-//     fontSize: 24,
-//     fontWeight: "bold",
-//     marginBottom: 20,
-//     textAlign: "center",
-//   },
-//   listContainer: {
-//     paddingBottom: 20,
-//   },
-//   itemCard: {
-//     flex: 1,
-//     margin: 5,
-//     borderRadius: 10,
-//     overflow: "hidden",
-//     backgroundColor: "#f0f0f0",
-//   },
-//   itemImage: {
-//     width: "100%",
-//     height: 150,
-//     resizeMode: "cover",
-//   },
-//   itemInfo: {
-//     padding: 10,
-//   },
-//   itemName: {
-//     fontSize: 16,
-//     fontWeight: "bold",
-//   },
-//   itemPrice: {
-//     fontSize: 14,
-//     color: "#888",
-//     marginTop: 5,
-//   },
-// });
-
-// export default CategoryItemsScreen;
-
 import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  FlatList,
-  Image,
   StyleSheet,
   TouchableOpacity,
+  Image,
+  ScrollView,
+  Dimensions,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import { API_URL } from "@/constants/Colors";
-
-// const API_URL = "http://192.168.0.181:5000";
+import { FlashList } from "@shopify/flash-list";
+import SearchInput from "@/components/SearchInput";
+import FloatingCartIcon from "@/components/FloatingCart";
 
 const CategoryProducts = () => {
   const [products, setProducts] = useState([]);
+  const [searchInput, setSearchInput] = useState("");
   const route = useRoute();
   const navigation = useNavigation();
   const { category, categoryId } = route.params;
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [categoryId]);
 
   const fetchProducts = async () => {
     try {
       const response = await axios.get(
-        `${API_URL}/products?categoryId=${categoryId}`
+        `${API_URL}/products/products/search/?category=${categoryId}`
       );
+      console.log("Category id:", categoryId);
       setProducts(response.data);
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -148,31 +39,81 @@ const CategoryProducts = () => {
     }
   };
 
-  const renderProduct = ({ item }) => (
-    <TouchableOpacity
-      style={styles.productItem}
-      onPress={() => {
-        /* Navigate to product detail */
-      }}
-    >
-      <Image source={{ uri: item.image }} style={styles.productImage} />
-      <View style={styles.productInfo}>
-        <Text style={styles.productName}>{item.name}</Text>
-        <Text style={styles.productDescription}>{item.description}</Text>
-        <Text style={styles.productPrice}>${item.price.toFixed(2)}</Text>
-      </View>
-    </TouchableOpacity>
-  );
+  const renderProduct = ({ item }) => {
+    // Check if the image is a relative path and prepend the API_URL
+    const imageUrl = item.image ? `${API_URL}${item.image}` : null;
+
+    return (
+      <TouchableOpacity
+        style={styles.productCard}
+        onPress={() =>
+          navigation.navigate("product-detail", { productId: item.id })
+        }
+      >
+        {imageUrl ? (
+          <Image
+            source={{ uri: item.image }}
+            style={styles.productImage}
+            onError={(e) =>
+              console.log("Product image load error:", e.nativeEvent.error)
+            }
+            defaultSource={require("@/assets/images/placeholder.jpg")} // Fallback image in case of error
+          />
+        ) : (
+          <View style={styles.placeholderImage}>
+            <MaterialIcons name="image" size={40} color="#c4c4c4" />
+          </View>
+        )}
+
+        <View style={styles.productInfo}>
+          <Text style={styles.productName}>{item.name}</Text>
+          <Text style={styles.productPrice}>${item.price}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{category} Products</Text>
-      <FlatList
-        data={products}
-        renderItem={renderProduct}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.productList}
-      />
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>{category}</Text>
+          <Text style={styles.headerSubtitle}>
+            Explore our {category.toLowerCase()} selection
+          </Text>
+        </View>
+
+        {/* Search input */}
+        <View style={styles.searchInputContainer}>
+          <SearchInput
+            placeholder={`Search ${category}`}
+            value={searchInput}
+            onChangeText={setSearchInput}
+          />
+        </View>
+
+        {/* Products section */}
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle}>Products</Text>
+          {products.length > 0 ? (
+            <FlashList
+              data={products}
+              renderItem={renderProduct}
+              keyExtractor={(item) => item.id.toString()}
+              estimatedItemSize={4}
+              numColumns={2}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.productsContainer}
+            />
+          ) : (
+            <Text style={styles.noProductsText}>
+              No products found in this category.
+            </Text>
+          )}
+        </View>
+      </ScrollView>
+      <FloatingCartIcon />
     </View>
   );
 };
@@ -180,47 +121,84 @@ const CategoryProducts = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: "#fff",
+    backgroundColor: "#f0f8ff", // Light blue background
   },
-  title: {
-    fontSize: 24,
+  scrollViewContent: {
+    flexGrow: 1,
+  },
+  header: {
+    backgroundColor: "#4169e1", // Royal Blue
+    paddingTop: 60,
+    paddingBottom: 30,
+    paddingHorizontal: 20,
+  },
+  headerTitle: {
+    fontSize: 36,
     fontWeight: "bold",
+    color: "#ffffff",
+    marginBottom: 5,
+  },
+  headerSubtitle: {
+    fontSize: 18,
+    color: "#ffffff",
+    opacity: 0.8,
+  },
+  searchInputContainer: {
+    marginTop: -25,
+    marginHorizontal: 20,
     marginBottom: 20,
   },
-  productList: {
-    paddingBottom: 20,
+  sectionContainer: {
+    marginBottom: 30,
+    paddingHorizontal: 20,
   },
-  productItem: {
-    flexDirection: "row",
-    padding: 10,
-    marginBottom: 10,
-    borderRadius: 8,
-    backgroundColor: "#f0f0f0",
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#4169e1", // Royal Blue
+    marginBottom: 15,
+  },
+  productsContainer: {
+    paddingVertical: 10,
+  },
+  productCard: {
+    width: (Dimensions.get("window").width - 60) / 2,
+    marginRight: 15,
+    marginBottom: 15,
+    borderRadius: 15,
+    backgroundColor: "#ffffff",
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    overflow: "hidden",
   },
   productImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
+    width: "100%",
+    height: 150,
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
   },
   productInfo: {
-    flex: 1,
-    marginLeft: 10,
+    padding: 10,
   },
   productName: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  productDescription: {
-    fontSize: 14,
-    color: "#666",
-    marginTop: 4,
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#4169e1", // Royal Blue
+    marginBottom: 5,
   },
   productPrice: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
-    color: "#e91e63",
-    marginTop: 4,
+    color: "#e91e63", // Pink
+  },
+  noProductsText: {
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+    marginTop: 20,
   },
 });
 

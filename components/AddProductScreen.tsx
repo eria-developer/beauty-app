@@ -14,7 +14,6 @@ import {
 import { Picker } from "@react-native-picker/picker";
 import { Colors } from "@/constants/Colors";
 import { MaterialIcons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
 import { API_URL } from "@/constants/Colors";
@@ -24,26 +23,34 @@ import {
   refreshAccessToken,
   getUserId,
 } from "@/utils/authHelpers";
-import { extractUserIdFromToken } from "@/utils/tokenUtils";
-// import { getUserId } from "@/utils/authHelpers";
-// import { getAccessToken, refreshAccessToken } from "@/utils/authHelpers";
 
 const AddProductServiceScreen = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
-  const [category, setCategory] = useState("perfumes");
+  const [category, setCategory] = useState("");
   const [image, setImage] = useState(null);
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isCategoryLoading, setIsCategoryLoading] = useState(false);
+  const [isCategoryLoading, setIsCategoryLoading] = useState(true);
 
   useEffect(() => {
     fetchCategories();
   }, []);
 
-  const fetchCategories = async () => {};
+  const fetchCategories = async () => {
+    setIsCategoryLoading(true);
+    try {
+      const response = await axios.get(`${API_URL}/products/categories`);
+      setCategories(response.data);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      showToast("error", "Error", "Failed to fetch categories");
+    } finally {
+      setIsCategoryLoading(false);
+    }
+  };
 
   const pickImage = async () => {
     try {
@@ -76,7 +83,6 @@ const AddProductServiceScreen = () => {
   const handleSubmit = async () => {
     setIsLoading(true);
     try {
-      // Retrieve the authentication token
       let token = await getAccessToken();
 
       if (!token) {
@@ -88,28 +94,12 @@ const AddProductServiceScreen = () => {
         throw new Error("Failed to retrieve or refresh authentication token");
       }
 
-      // Retrieve the user ID
       let userId;
       try {
         userId = await getUserId();
       } catch (error) {
         console.error("Error retrieving user ID:", error);
         throw new Error("Failed to retrieve user ID. Please log in again.");
-      }
-
-      // Log the data before appending to FormData
-      console.log("Data being submitted:");
-      console.log("Category:", category);
-      console.log("Name:", name);
-      console.log("Description:", description);
-      console.log("Price:", price);
-      console.log("Stock:", stock);
-      console.log("Seller:", userId);
-
-      if (image) {
-        console.log("Image URI:", image.uri);
-      } else {
-        console.log("No image selected.");
       }
 
       const formData = new FormData();
@@ -168,7 +158,7 @@ const AddProductServiceScreen = () => {
   };
 
   return (
-    <LinearGradient colors={["white", "#DFB7BF"]} style={styles.background}>
+    <View style={styles.background}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.container}>
           <Text style={styles.title}>Add New Product</Text>
@@ -180,7 +170,7 @@ const AddProductServiceScreen = () => {
               value={name}
               onChangeText={setName}
               placeholder="Enter product name"
-              placeholderTextColor={Colors.light.primary}
+              placeholderTextColor={Colors.light.text}
             />
           </View>
 
@@ -191,7 +181,7 @@ const AddProductServiceScreen = () => {
               value={description}
               onChangeText={setDescription}
               placeholder="Describe your product"
-              placeholderTextColor={Colors.light.primary}
+              placeholderTextColor={Colors.light.text}
               multiline
               numberOfLines={4}
             />
@@ -204,7 +194,7 @@ const AddProductServiceScreen = () => {
               value={price}
               onChangeText={setPrice}
               placeholder="Enter price"
-              placeholderTextColor={Colors.light.primary}
+              placeholderTextColor={Colors.light.text}
               keyboardType="numeric"
             />
           </View>
@@ -217,28 +207,17 @@ const AddProductServiceScreen = () => {
               <View style={styles.pickerContainer}>
                 <Picker
                   selectedValue={category}
-                  onValueChange={(itemValue, itemIndex) => {
-                    setCategory(itemValue);
-                    console.log("Selected Category:", itemValue);
-                  }}
+                  onValueChange={(itemValue) => setCategory(itemValue)}
                   style={styles.picker}
                 >
                   <Picker.Item label="Select a Category" value="" />
-                  <Picker.Item
-                    key="perfumes"
-                    label="Perfumes"
-                    value="perfumes"
-                  />
-                  <Picker.Item
-                    key="vaselines"
-                    label="Vaselines"
-                    value="vaselines"
-                  />
-                  <Picker.Item
-                    key="bodysprays"
-                    label="Body Sprays"
-                    value="bodysprays"
-                  />
+                  {categories.map((cat) => (
+                    <Picker.Item
+                      key={cat.id.toString()}
+                      label={cat.name}
+                      value={cat.id.toString()}
+                    />
+                  ))}
                 </Picker>
               </View>
             )}
@@ -251,7 +230,7 @@ const AddProductServiceScreen = () => {
               value={stock}
               onChangeText={setStock}
               placeholder="Enter stock quantity"
-              placeholderTextColor={Colors.light.primary}
+              placeholderTextColor={Colors.light.text}
               keyboardType="numeric"
             />
           </View>
@@ -269,7 +248,7 @@ const AddProductServiceScreen = () => {
                   <MaterialIcons
                     name="add-a-photo"
                     size={24}
-                    color={Colors.light.rearText}
+                    color={Colors.light.text}
                   />
                   <Text style={styles.uploadText}>Upload Image</Text>
                 </View>
@@ -290,13 +269,14 @@ const AddProductServiceScreen = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </LinearGradient>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   background: {
     flex: 1,
+    backgroundColor: Colors.light.background,
   },
   scrollViewContent: {
     flexGrow: 1,
@@ -317,31 +297,32 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: "600",
-    color: Colors.light.rearText,
+    color: Colors.light.text,
     marginBottom: 5,
   },
   input: {
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    backgroundColor: Colors.light.tint,
     borderWidth: 1,
     borderColor: Colors.light.primary,
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 8,
     fontSize: 16,
-    color: Colors.light.primary,
+    color: Colors.light.text,
   },
   textArea: {
     height: 100,
   },
-  disabledButton: {},
   pickerContainer: {
     borderWidth: 1,
     borderColor: Colors.light.primary,
     borderRadius: 8,
+    backgroundColor: Colors.light.tint,
   },
   picker: {
     height: 50,
     width: "100%",
+    color: Colors.light.text,
   },
   imageUpload: {
     borderWidth: 1,
@@ -350,7 +331,7 @@ const styles = StyleSheet.create({
     height: 150,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    backgroundColor: Colors.light.tint,
   },
   uploadedImage: {
     width: "100%",
@@ -363,7 +344,7 @@ const styles = StyleSheet.create({
   },
   uploadText: {
     marginTop: 10,
-    color: Colors.light.primary,
+    color: Colors.light.text,
   },
   submitButton: {
     backgroundColor: Colors.light.primary,
@@ -375,6 +356,9 @@ const styles = StyleSheet.create({
     color: Colors.light.background,
     fontSize: 18,
     fontWeight: "600",
+  },
+  disabledButton: {
+    opacity: 0.7,
   },
 });
 
