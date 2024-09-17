@@ -17,6 +17,7 @@ export const Colors: any = {
     primary: "#C65200",
     newBackground: "#f0f8ff",
     rearText: "#0C203F",
+    royalBlue: "#4169e1",
   },
   dark: {
     text: "#ECEDEE",

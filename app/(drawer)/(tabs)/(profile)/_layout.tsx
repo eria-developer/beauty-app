@@ -11,7 +11,7 @@ const MoreLayout = () => {
         headerTitleAlign: "center",
         headerTintColor: "#FFF",
         headerTitleStyle: { fontWeight: "bold" },
-        headerStyle: { backgroundColor: Colors.light.primary },
+        headerStyle: { backgroundColor: Colors.light.royalBlue },
         // headerLeft: () => <DrawerToggleButton tintColor="#FFF" />,
       }}
     >
@@ -23,15 +23,15 @@ const MoreLayout = () => {
           headerLeft: () => <DrawerToggleButton tintColor="#FFF" />,
         }}
       />
-      <Stack.Screen
+      {/* <Stack.Screen
         name="e-gift-card"
-        options={{ headerShown: true, title: "E-GIFT CARD" }}
-      />
+        options={{ headerShown: false, title: "E-GIFT CARD" }}
+      /> */}
       <Stack.Screen
-        name="track-order"
-        options={{ headerShown: true, title: "TRACK-ORDER" }}
+        name="edit-profile"
+        options={{ headerShown: false, title: "EDIT PROFILE" }}
       />
-      <Stack.Screen
+      {/* <Stack.Screen
         name="deals"
         options={{ headerShown: true, title: "DEALS" }}
       />
@@ -51,7 +51,7 @@ const MoreLayout = () => {
       <Stack.Screen
         name="contact-support"
         options={{ headerShown: true, title: "CONTACT SUPPORT" }}
-      />
+      /> */}
     </Stack>
   );
 };

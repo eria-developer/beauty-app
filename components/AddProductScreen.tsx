@@ -10,9 +10,9 @@ import {
   Alert,
   Platform,
   ActivityIndicator,
+  SafeAreaView,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import { Colors } from "@/constants/Colors";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
@@ -158,11 +158,13 @@ const AddProductServiceScreen = () => {
   };
 
   return (
-    <View style={styles.background}>
-      <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <View style={styles.container}>
-          <Text style={styles.title}>Add New Product</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Add New Product</Text>
+        </View>
 
+        <View style={styles.formContainer}>
           <View style={styles.formGroup}>
             <Text style={styles.label}>Name</Text>
             <TextInput
@@ -170,7 +172,7 @@ const AddProductServiceScreen = () => {
               value={name}
               onChangeText={setName}
               placeholder="Enter product name"
-              placeholderTextColor={Colors.light.text}
+              placeholderTextColor="#999"
             />
           </View>
 
@@ -181,7 +183,7 @@ const AddProductServiceScreen = () => {
               value={description}
               onChangeText={setDescription}
               placeholder="Describe your product"
-              placeholderTextColor={Colors.light.text}
+              placeholderTextColor="#999"
               multiline
               numberOfLines={4}
             />
@@ -194,7 +196,7 @@ const AddProductServiceScreen = () => {
               value={price}
               onChangeText={setPrice}
               placeholder="Enter price"
-              placeholderTextColor={Colors.light.text}
+              placeholderTextColor="#999"
               keyboardType="numeric"
             />
           </View>
@@ -202,7 +204,7 @@ const AddProductServiceScreen = () => {
           <View style={styles.formGroup}>
             <Text style={styles.label}>Category</Text>
             {isCategoryLoading ? (
-              <ActivityIndicator size="small" color={Colors.light.primary} />
+              <ActivityIndicator size="small" color="#4169e1" />
             ) : (
               <View style={styles.pickerContainer}>
                 <Picker
@@ -226,7 +228,7 @@ const AddProductServiceScreen = () => {
               value={stock}
               onChangeText={setStock}
               placeholder="Enter stock quantity"
-              placeholderTextColor={Colors.light.text}
+              placeholderTextColor="#999"
               keyboardType="numeric"
             />
           </View>
@@ -241,11 +243,7 @@ const AddProductServiceScreen = () => {
                 />
               ) : (
                 <View style={styles.uploadPlaceholder}>
-                  <MaterialIcons
-                    name="add-a-photo"
-                    size={24}
-                    color={Colors.light.text}
-                  />
+                  <MaterialIcons name="add-a-photo" size={24} color="#4169e1" />
                   <Text style={styles.uploadText}>Upload Image</Text>
                 </View>
               )}
@@ -258,34 +256,40 @@ const AddProductServiceScreen = () => {
             disabled={isLoading}
           >
             {isLoading ? (
-              <ActivityIndicator size="small" color={Colors.light.background} />
+              <ActivityIndicator size="small" color="#fff" />
             ) : (
               <Text style={styles.submitButtonText}>Add Product</Text>
             )}
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  background: {
+  safeArea: {
     flex: 1,
-    backgroundColor: Colors.light.background,
-  },
-  scrollViewContent: {
-    flexGrow: 1,
+    backgroundColor: "#4169e1",
   },
   container: {
     flex: 1,
-    padding: 20,
+    backgroundColor: "#f0f8ff",
   },
-  title: {
-    fontSize: 28,
+  header: {
+    backgroundColor: "#4169e1",
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    alignItems: "center",
+  },
+  headerTitle: {
+    fontSize: 24,
     fontWeight: "bold",
-    color: Colors.light.primary,
-    marginBottom: 20,
+    color: "#ffffff",
+  },
+  formContainer: {
+    padding: 20,
+    backgroundColor: "#ffffff",
   },
   formGroup: {
     marginBottom: 20,
@@ -293,41 +297,41 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: "600",
-    color: Colors.light.text,
+    color: "#333",
     marginBottom: 5,
   },
   input: {
-    backgroundColor: Colors.light.tint,
+    backgroundColor: "#f0f8ff",
     borderWidth: 1,
-    borderColor: Colors.light.primary,
+    borderColor: "#4169e1",
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 8,
     fontSize: 16,
-    color: Colors.light.text,
+    color: "#333",
   },
   textArea: {
     height: 100,
   },
   pickerContainer: {
     borderWidth: 1,
-    borderColor: Colors.light.primary,
+    borderColor: "#4169e1",
     borderRadius: 8,
-    backgroundColor: Colors.light.tint,
+    backgroundColor: "#f0f8ff",
   },
   picker: {
     height: 50,
     width: "100%",
-    color: Colors.light.text,
+    color: "#333",
   },
   imageUpload: {
     borderWidth: 1,
-    borderColor: Colors.light.primary,
+    borderColor: "#4169e1",
     borderRadius: 8,
     height: 150,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: Colors.light.tint,
+    backgroundColor: "#f0f8ff",
   },
   uploadedImage: {
     width: "100%",
@@ -340,16 +344,16 @@ const styles = StyleSheet.create({
   },
   uploadText: {
     marginTop: 10,
-    color: Colors.light.text,
+    color: "#4169e1",
   },
   submitButton: {
-    backgroundColor: Colors.light.primary,
+    backgroundColor: "#4169e1",
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",
   },
   submitButtonText: {
-    color: Colors.light.background,
+    color: "#ffffff",
     fontSize: 18,
     fontWeight: "600",
   },

@@ -7,6 +7,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { DrawerToggleButton } from "@react-navigation/drawer";
+import { Ionicons } from "@expo/vector-icons";
 // import { Colors } from "@/constants/Colors";
 
 export default function TabLayout() {
@@ -77,12 +78,12 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="(more)"
+        name="(profile)"
         options={{
           headerShown: false,
-          title: "More",
+          title: "My Profile",
           tabBarIcon: ({ color, focused }) => (
-            <Feather name="more-horizontal" color={color} size={28} />
+            <Ionicons name="person-outline" color={color} size={28} />
           ),
         }}
       />
