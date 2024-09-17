@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Dimensions,
   ImageBackground,
   TouchableOpacity,
+  ScrollView,
 } from "react-native";
 import { Colors } from "@/constants/Colors";
 import {
@@ -15,11 +16,12 @@ import {
   getUserData,
   getAuthenticatedAxiosInstance,
   logoutUser,
+  refreshAccessToken,
 } from "@/utils/authHelpers";
 import { API_URL } from "@/constants/Colors";
 import { AntDesign } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 
 const { height, width } = Dimensions.get("window");
 
@@ -32,9 +34,39 @@ const HalfScreenBackgroundLayout = () => {
 
   const router = useRouter();
 
-  useEffect(() => {
-    checkAuthStatus();
-  }, []);
+  const fetchUserOrders = async () => {
+    if (!loggedIn) return;
+
+    setLoading(true);
+    try {
+      const axiosInstance = await getAuthenticatedAxiosInstance();
+      const response = await axiosInstance.get(`${API_URL}/products/user-orders/`);
+      
+      if (response.data && Array.isArray(response.data)) {
+        setUserOrders(response.data);
+      } else {
+        console.error("Unexpected response format:", response.data);
+        setUserOrders([]);
+      }
+    } catch (error) {
+      console.error("Error fetching user orders:", error);
+      
+      if (error.response && error.response.status === 401) {
+        console.log("Unauthorized access, attempting to refresh token...");
+        const newToken = await refreshAccessToken();
+        if (newToken) {
+          const newAxiosInstance = await getAuthenticatedAxiosInstance();
+          const retryResponse = await newAxiosInstance.get(`${API_URL}/products/user-orders/`);
+          setUserOrders(retryResponse.data);
+        } else {
+          console.log("Token refresh failed, logging out user");
+          await logoutUser();
+        }
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const checkAuthStatus = async () => {
     const loggedInn = await isLoggedIn();
@@ -42,32 +74,25 @@ const HalfScreenBackgroundLayout = () => {
     if (loggedInn) {
       const userInfo = await getUserData();
       setUserData(userInfo);
-      fetchUserOrders();
+      await fetchUserOrders();
     }
   };
 
-  const fetchUserOrders = async () => {
-    if (!loggedIn) return;
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
 
-    setLoading(true);
-    try {
-      const axiosInstance = await getAuthenticatedAxiosInstance();
-      const response = await axiosInstance.get(
-        `${API_URL}/products/user-orders/`
-      );
-      setUserOrders(response.data);
-    } catch (error) {
-      console.error("Error fetching user orders:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useFocusEffect(
+    useCallback(() => {
+      checkAuthStatus();
+    }, [])
+  );
 
-  const onRefresh = async () => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await fetchUserOrders();
     setRefreshing(false);
-  };
+  }, [loggedIn]);
 
   const renderOrderItem = ({ item }) => (
     <View style={styles.orderItem}>
@@ -80,8 +105,14 @@ const HalfScreenBackgroundLayout = () => {
       </Text>
     </View>
   );
+
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
       <ImageBackground
         source={{
           uri: "https://img.freepik.com/free-photo/front-view-smiley-woman-holding-hair-products_23-2149635003.jpg?ga=GA1.1.476787416.1724867277&semt=ais_hybrid",
@@ -124,7 +155,6 @@ const HalfScreenBackgroundLayout = () => {
             </Text>
           </TouchableOpacity>
 
-          {/* login and register buttons  */}
           {!loggedIn && (
             <View style={styles.registerAndLoginButtons}>
               <TouchableOpacity
@@ -142,7 +172,6 @@ const HalfScreenBackgroundLayout = () => {
             </View>
           )}
 
-          {/* recent orders section */}
           <View style={styles.recentOrders}>
             <Text style={styles.recentOrderTitle}>My Recent Orders</Text>
             {loggedIn ? (
@@ -155,13 +184,6 @@ const HalfScreenBackgroundLayout = () => {
                     {loading ? "Loading orders..." : "No recent orders"}
                   </Text>
                 }
-                refreshControl={
-                  <RefreshControl
-                    refreshing={refreshing}
-                    onRefresh={onRefresh}
-                    colors={[Colors.light.primary]}
-                  />
-                }
               />
             ) : (
               <Text style={styles.loginPrompt}>
@@ -171,7 +193,7 @@ const HalfScreenBackgroundLayout = () => {
           </View>
         </View>
       </LinearGradient>
-    </View>
+    </ScrollView>
   );
 };
 
