@@ -1,87 +1,182 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Dimensions,
   ScrollView,
   Image,
+  ActivityIndicator,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { AntDesign } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { Colors } from "@/constants/Colors";
-
-const { width } = Dimensions.get("window");
+import { getUserData, updateUserData } from "@/utils/authHelpers";
+import { showToast } from "@/utils/toastConfig";
+import * as ImagePicker from "expo-image-picker";
 
 const EditProfileScreen = () => {
+  const [loading, setLoading] = useState(false);
   const [profilePic, setProfilePic] = useState(null);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
 
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const userData = await getUserData();
+      if (userData) {
+        setProfilePic(userData.profilePicture);
+        setFirstName(userData.first_name);
+        setLastName(userData.last_name);
+        setEmail(userData.email);
+      }
+    };
+    fetchUserData();
+  }, []);
 
-  const handleProfilePicSelect = () => {
-    console.log("Select profile pic");
+  const handleProfilePicSelect = async () => {
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (permissionResult.granted === false) {
+      alert("Permission to access camera roll is required!");
+      return;
+    }
+
+    const pickerResult = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!pickerResult.cancelled) {
+      setProfilePic(pickerResult.uri);
+    }
+  };
+
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      const updatedData = {
+        first_name: firstName,
+        last_name: lastName,
+        email: email,
+        profilePicture: profilePic,
+      };
+      await updateUserData(updatedData);
+      showToast("success", "Success", "Profile updated successfully!");
+      router.back();
+    } catch (error) {
+      console.error("Update profile error:", error);
+      showToast(
+        "error",
+        "Error",
+        "Failed to update profile. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <TouchableOpacity
-        style={styles.profilePicContainer}
-        onPress={handleProfilePicSelect}
-      >
-        {profilePic ? (
-          <Image source={{ uri: profilePic }} style={styles.profilePic} />
-        ) : (
-          <View style={styles.profilePicPlaceholder}>
-            <AntDesign name="camerao" size={40} color={Colors.light.primary} />
-            <Text style={styles.profilePicText}>Add Photo</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Edit Profile</Text>
+        </View>
+
+        <View style={styles.content}>
+          <TouchableOpacity
+            style={styles.profilePicContainer}
+            onPress={handleProfilePicSelect}
+          >
+            {profilePic ? (
+              <Image source={{ uri: profilePic }} style={styles.profilePic} />
+            ) : (
+              <View style={styles.profilePicPlaceholder}>
+                <AntDesign
+                  name="camerao"
+                  size={40}
+                  color={Colors.light.primary}
+                />
+                <Text style={styles.profilePicText}>Add Photo</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="First Name"
+              placeholderTextColor="#a9a9a9"
+              value={firstName}
+              onChangeText={setFirstName}
+            />
           </View>
-        )}
-      </TouchableOpacity>
 
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="First Name"
-          value={firstName}
-          onChangeText={setFirstName}
-        />
-      </View>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Last Name"
+              placeholderTextColor="#a9a9a9"
+              value={lastName}
+              onChangeText={setLastName}
+            />
+          </View>
 
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Last Name"
-          value={lastName}
-          onChangeText={setLastName}
-        />
-      </View>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              placeholderTextColor="#a9a9a9"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+            />
+          </View>
 
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-        />
-      </View>
-
-      <TouchableOpacity style={styles.signUpButton}>
-        <Text style={styles.signUpButtonText}>SAVE</Text>
-      </TouchableOpacity>
-    </ScrollView>
+          <TouchableOpacity
+            style={styles.saveButton}
+            onPress={handleSave}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={styles.saveButtonText}>SAVE</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: Colors.light.primary,
+  },
   container: {
     flex: 1,
+    backgroundColor: Colors.light.background,
+  },
+  header: {
+    backgroundColor: Colors.light.primary,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    alignItems: "center",
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#ffffff",
+  },
+  content: {
     padding: 20,
-    backgroundColor: "#fff",
   },
   profilePicContainer: {
     alignItems: "center",
@@ -113,39 +208,9 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.light.primary,
     paddingVertical: 10,
     fontSize: 16,
+    color: Colors.light.text,
   },
-  birthdayLabel: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 5,
-    color: "#555",
-  },
-  birthdayContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-  birthdayInput: {
-    width: width * 0.25,
-  },
-  termsContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderWidth: 1,
-    borderColor: Colors.light.primary,
-    marginRight: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  termsText: {
-    color: "#555",
-  },
-  signUpButton: {
+  saveButton: {
     backgroundColor: Colors.light.primary,
     paddingVertical: 12,
     borderRadius: 8,
@@ -156,24 +221,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.22,
     shadowRadius: 2.22,
   },
-  signUpButtonText: {
+  saveButtonText: {
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
-  },
-  loginContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 20,
-  },
-  loginText: {
-    color: "#555",
-    fontSize: 14,
-  },
-  loginLink: {
-    color: Colors.light.primary,
-    fontSize: 14,
-    fontWeight: "bold",
   },
 });
 

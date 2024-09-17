@@ -8,6 +8,7 @@ import {
   Dimensions,
   ScrollView,
   ActivityIndicator,
+  SafeAreaView,
 } from "react-native";
 import { router } from "expo-router";
 import { Colors } from "@/constants/Colors";
@@ -53,7 +54,11 @@ const SignUpScreen = () => {
           refresh_token: response.data.data.refresh_token,
         });
 
-        showToast("success", "Success", response.data.message || "Registered successfully!");
+        showToast(
+          "success",
+          "Success",
+          response.data.message || "Registered successfully!"
+        );
         router.replace("/(drawer)/(tabs)/home");
       } else {
         throw new Error("Unexpected response structure");
@@ -61,7 +66,9 @@ const SignUpScreen = () => {
     } catch (error) {
       console.error("Registration error details: ", error);
       const errorMessage =
-        error.response?.data?.message || error.message || "Registration failed!";
+        error.response?.data?.message ||
+        error.message ||
+        "Registration failed!";
       showToast("error", "Error", errorMessage);
     } finally {
       setLoading(false);
@@ -73,96 +80,121 @@ const SignUpScreen = () => {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="First Name"
-          value={firstName}
-          onChangeText={setFirstName}
-        />
-      </View>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView style={styles.container}>
+        <View style={styles.content}>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="First Name"
+              placeholderTextColor="#a9a9a9"
+              value={firstName}
+              onChangeText={setFirstName}
+            />
+          </View>
 
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Last Name"
-          value={lastName}
-          onChangeText={setLastName}
-        />
-      </View>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Last Name"
+              placeholderTextColor="#a9a9a9"
+              value={lastName}
+              onChangeText={setLastName}
+            />
+          </View>
 
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-        />
-      </View>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              placeholderTextColor="#a9a9a9"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+            />
+          </View>
 
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
-      </View>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Password"
+              placeholderTextColor="#a9a9a9"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
+          </View>
 
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Confirm Password"
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          secureTextEntry
-        />
-      </View>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Confirm Password"
+              placeholderTextColor="#a9a9a9"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry
+            />
+          </View>
 
-      <TouchableOpacity
-        style={styles.signUpButton}
-        onPress={handleSignUp}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator size="small" color="#fff" />
-        ) : (
-          <Text style={styles.signUpButtonText}>CONTINUE</Text>
-        )}
-      </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.signUpButton}
+            onPress={handleSignUp}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={styles.signUpButtonText}>SIGN UP</Text>
+            )}
+          </TouchableOpacity>
 
-      <View style={styles.loginContainer}>
-        <Text style={styles.loginText}>Already have an account? </Text>
-        <TouchableOpacity onPress={handleLogin}>
-          <Text style={styles.loginLink}>Login</Text>
-        </TouchableOpacity>
-      </View>
-
-      <Toast />
-    </ScrollView>
+          <View style={styles.loginContainer}>
+            <Text style={styles.loginText}>Already have an account? </Text>
+            <TouchableOpacity onPress={handleLogin}>
+              <Text style={styles.loginLink}>Login</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#4169e1",
+  },
   container: {
     flex: 1,
+    backgroundColor: "#f0f8ff",
+  },
+  header: {
+    backgroundColor: "#4169e1",
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    alignItems: "center",
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#ffffff",
+  },
+  content: {
     padding: 20,
-    backgroundColor: "#fff",
   },
   inputContainer: {
     marginBottom: 20,
   },
   input: {
     borderBottomWidth: 1,
-    borderBottomColor: Colors.light.primary,
+    borderBottomColor: "#4169e1",
     paddingVertical: 10,
     fontSize: 16,
+    color: "#333",
   },
   signUpButton: {
-    backgroundColor: Colors.light.primary,
+    backgroundColor: "#4169e1",
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",
@@ -187,7 +219,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   loginLink: {
-    color: Colors.light.primary,
+    color: "#4169e1",
     fontSize: 14,
     fontWeight: "bold",
   },

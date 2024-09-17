@@ -31,7 +31,7 @@ const ProfileScreen = () => {
 
   const handleEditProfile = () => {
     // Navigate to edit profile screen
-    router.push("/edit-profile");
+    router.push("/(drawer)/(tabs)/(profile)/edit-profile");
   };
 
   if (!userData) {
@@ -45,10 +45,6 @@ const ProfileScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>My Profile</Text>
-        </View>
-
         <View style={styles.profileInfoContainer}>
           <Image
             source={{
