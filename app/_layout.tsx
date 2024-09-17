@@ -49,6 +49,7 @@ export default function RootLayout() {
         >
           <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="cart" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
         </Stack>
         <Toast config={toastConfig} />
