@@ -24,6 +24,7 @@ const LoginScreen = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // In LoginScreen.js
   const handleLogin = async () => {
     setLoading(true);
     try {
@@ -37,8 +38,8 @@ const LoginScreen = () => {
           id: response.data.id,
           email: response.data.email,
           full_name: response.data.full_name,
-          access_token: response.data.access_token,
-          refresh_token: response.data.refresh_token,
+          access_token: response.data.access_token, // Make sure this matches the API response
+          refresh_token: response.data.refresh_token, // Make sure this matches the API response
         });
         showToast("success", "Success", "Logged in successfully!");
         router.push("/(drawer)/(tabs)/home");

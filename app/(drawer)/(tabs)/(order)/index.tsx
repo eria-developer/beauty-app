@@ -18,6 +18,9 @@ import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import { API_URL } from "@/constants/Colors";
 import { MaterialIcons } from "@expo/vector-icons";
+// import { useRouter } from "expo-router";
+
+// const router = useRouter();
 
 const MenuScreen = () => {
   const [searchInput, setSearchInput] = useState("");

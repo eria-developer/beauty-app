@@ -212,11 +212,7 @@ const AddProductServiceScreen = () => {
                 >
                   <Picker.Item label="Select a Category" value="" />
                   {categories.map((cat) => (
-                    <Picker.Item
-                      key={cat.id.toString()}
-                      label={cat.name}
-                      value={cat.id.toString()}
-                    />
+                    <Picker.Item key={cat.id} label={cat.name} value={cat.id} />
                   ))}
                 </Picker>
               </View>

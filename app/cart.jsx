@@ -146,8 +146,7 @@ const CartScreen = () => {
           <TouchableOpacity
             style={[styles.button, styles.checkoutButton]}
             onPress={() => {
-              // Implement checkout logic here
-              Alert.alert("Checkout", "Proceed to payment");
+              router.push("/checkout");
             }}
           >
             <Text style={styles.buttonText}>Checkout</Text>

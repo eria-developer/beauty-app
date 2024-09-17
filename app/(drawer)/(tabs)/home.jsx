@@ -1,36 +1,86 @@
-import { AntDesign } from "@expo/vector-icons";
-import { router } from "expo-router";
 import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  ImageBackground,
+  FlatList,
   StyleSheet,
+  RefreshControl,
   Dimensions,
+  ImageBackground,
   TouchableOpacity,
 } from "react-native";
 import { Colors } from "@/constants/Colors";
+import {
+  isLoggedIn,
+  getUserData,
+  getAuthenticatedAxiosInstance,
+  logoutUser,
+} from "@/utils/authHelpers";
+import { API_URL } from "@/constants/Colors";
+import { AntDesign } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { isLoggedIn, getUserData } from "@/utils/authHelpers";
+import { useRouter } from "expo-router";
 
 const { height, width } = Dimensions.get("window");
 
 const HalfScreenBackgroundLayout = () => {
   const [loggedIn, setLoggedIn] = useState(false);
   const [userData, setUserData] = useState(null);
+  const [userOrders, setUserOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const router = useRouter();
 
   useEffect(() => {
-    const checkAuthStatus = async () => {
-      const loggedInn = await isLoggedIn();
-      setLoggedIn(loggedInn);
-      if (loggedInn) {
-        const userInfo = await getUserData();
-        setUserData(userInfo);
-      }
-    };
     checkAuthStatus();
   }, []);
 
+  const checkAuthStatus = async () => {
+    const loggedInn = await isLoggedIn();
+    setLoggedIn(loggedInn);
+    if (loggedInn) {
+      const userInfo = await getUserData();
+      setUserData(userInfo);
+      fetchUserOrders();
+    }
+  };
+
+  const fetchUserOrders = async () => {
+    if (!loggedIn) return;
+
+    setLoading(true);
+    try {
+      const axiosInstance = await getAuthenticatedAxiosInstance();
+      const response = await axiosInstance.get(
+        `${API_URL}/products/user-orders/`
+      );
+      setUserOrders(response.data);
+    } catch (error) {
+      console.error("Error fetching user orders:", error);
+      // Handle error (e.g., show an alert)
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchUserOrders();
+    setRefreshing(false);
+  };
+
+  const renderOrderItem = ({ item }) => (
+    <View style={styles.orderItem}>
+      <Text style={styles.orderItemText}>Order #{item.id}</Text>
+      <Text style={styles.orderItemText}>
+        Date: {new Date(item.created_at).toLocaleDateString()}
+      </Text>
+      <Text style={styles.orderItemText}>
+        Status: {item.is_paid ? "Paid" : "Unpaid"}
+      </Text>
+    </View>
+  );
   return (
     <View style={styles.container}>
       <ImageBackground
@@ -93,13 +143,33 @@ const HalfScreenBackgroundLayout = () => {
             </View>
           )}
 
-          {/* recent orders section  */}
+          {/* recent orders section */}
           <View style={styles.recentOrders}>
             <Text style={styles.recentOrderTitle}>My Recent Orders</Text>
+            {loggedIn ? (
+              <FlatList
+                data={userOrders}
+                renderItem={renderOrderItem}
+                keyExtractor={(item) => item.id.toString()}
+                ListEmptyComponent={
+                  <Text style={styles.emptyListText}>
+                    {loading ? "Loading orders..." : "No recent orders"}
+                  </Text>
+                }
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    colors={[Colors.light.primary]}
+                  />
+                }
+              />
+            ) : (
+              <Text style={styles.loginPrompt}>
+                Login to view your recent orders
+              </Text>
+            )}
           </View>
-          <Text style={styles.loginPrompt}>
-            Login for an easy, one tap order again for your recent orders
-          </Text>
         </View>
       </LinearGradient>
     </View>
@@ -229,6 +299,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     color: Colors.light.primary,
+  },
+  orderItem: {
+    backgroundColor: "#f0f0f0",
+    padding: 10,
+    marginVertical: 5,
+    borderRadius: 5,
+  },
+  orderItemText: {
+    fontSize: 14,
+  },
+  emptyListText: {
+    textAlign: "center",
+    marginTop: 20,
+    fontSize: 16,
+    color: "#666",
   },
 });
 
