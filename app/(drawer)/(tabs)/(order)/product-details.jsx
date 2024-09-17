@@ -14,6 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import FloatingCartIcon from "@/components/FloatingCart";
 import axios from "axios";
 import { API_URL } from "@/constants/Colors";
+import { showToast } from "@/utils/toastConfig";
 
 const ProductDetailScreen = () => {
   const [product, setProduct] = useState(null);
@@ -50,7 +51,7 @@ const ProductDetailScreen = () => {
     if (newQuantity >= 1 && newQuantity <= product.stock) {
       setQuantity(newQuantity);
     } else if (newQuantity > product.stock) {
-      Alert.alert("Quantity Limit", "Cannot exceed available stock.");
+      showToast("info", "Quantity Limit", "Cannot exceed available stock.");
     }
   };
 
@@ -73,11 +74,11 @@ const ProductDetailScreen = () => {
       }
 
       await AsyncStorage.setItem("cart", JSON.stringify(parsedCart));
-      Alert.alert("Success", "Product added to cart successfully!");
+      showToast("success", "Success", "Product added to cart successfully!");
       console.log("Cart updated:", parsedCart);
     } catch (error) {
       console.error("Error adding product to cart:", error);
-      Alert.alert("Error", "Unable to add product to cart.");
+      showToast("error", "Error", "Unable to add product to cart.");
     }
   };
 

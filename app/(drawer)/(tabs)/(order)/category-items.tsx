@@ -35,7 +35,6 @@ const CategoryProducts = () => {
       setProducts(response.data);
     } catch (error) {
       console.error("Error fetching products:", error);
-      // Handle error (e.g., show an alert to the user)
     }
   };
 

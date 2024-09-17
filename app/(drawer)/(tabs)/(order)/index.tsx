@@ -43,7 +43,6 @@ const MenuScreen = () => {
       console.log("Fetched categories:", response.data); // Log the categories to the console
     } catch (error) {
       console.error("Error fetching categories:", error);
-      // Handle error (e.g., show an alert to the user)
     } finally {
       setIsLoading(false);
     }

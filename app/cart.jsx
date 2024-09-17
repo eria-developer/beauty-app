@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+import { showToast } from "@/utils/toastConfig";
 
 const CartScreen = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -44,7 +45,8 @@ const CartScreen = () => {
 
   const updateQuantity = async (productId, newQuantity) => {
     if (newQuantity < 1) {
-      Alert.alert("Invalid Quantity", "Quantity can't be less than 1");
+      // Alert.alert("Invalid Quantity", "Quantity can't be less than 1");
+      showToast("info", "Invalid Quantity", "Quantity can't be less than 1");
       return;
     }
 
@@ -63,7 +65,8 @@ const CartScreen = () => {
     setCartItems(updatedCart);
     await AsyncStorage.setItem("cart", JSON.stringify(updatedCart));
     calculateTotal(updatedCart);
-    Alert.alert("Item Removed", "Item has been removed from your cart.");
+    // Alert.alert("Item Removed", "Item has been removed from your cart.");
+    showToast("info", "Item Removed", "Item has been removed from your cart.")
   };
 
   const renderCartItem = ({ item }) => (

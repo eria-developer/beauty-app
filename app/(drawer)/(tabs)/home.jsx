@@ -58,7 +58,6 @@ const HalfScreenBackgroundLayout = () => {
       setUserOrders(response.data);
     } catch (error) {
       console.error("Error fetching user orders:", error);
-      // Handle error (e.g., show an alert)
     } finally {
       setLoading(false);
     }

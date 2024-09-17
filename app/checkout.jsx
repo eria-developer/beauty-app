@@ -12,6 +12,7 @@ import { useRouter } from "expo-router";
 import axios from "axios";
 import { API_URL } from "@/constants/Colors";
 import { getAccessToken, isLoggedIn } from "@/utils/authHelpers";
+import { showToast } from "@/utils/toastConfig";
 
 const CheckoutScreen = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -54,7 +55,8 @@ const CheckoutScreen = () => {
     setIsLoading(true);
     try {
       if (!isUserLoggedIn) {
-        Alert.alert("Error", "You need to be logged in to checkout.");
+        // Alert.alert("Error", "You need to be logged in to checkout.");
+        showToast("error", "Error", "You need to be logged in to checkout.");
         router.push("/(auth)/login");
         return;
       }
@@ -86,7 +88,12 @@ const CheckoutScreen = () => {
       }
     } catch (error) {
       console.error("Checkout error:", error);
-      Alert.alert(
+      //   Alert.alert(
+      // "Error",
+      // "There was a problem processing your order. Please try again."
+      //   );
+      showToast(
+        "error",
         "Error",
         "There was a problem processing your order. Please try again."
       );

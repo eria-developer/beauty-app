@@ -8,20 +8,19 @@ import {
   Alert,
 } from "react-native";
 import { Colors } from "@/constants/Colors";
+import { showToast } from "@/utils/toastConfig";
 
 const ContactUsScreen = () => {
   const [email, setEmail] = useState("");
 
   const handleSubmit = () => {
     if (email.trim() === "") {
-      Alert.alert("Error", "Please enter your email address");
+      showToast("error", "Error", "Please enter your email address")
       return;
     }
 
-    Alert.alert(
-      "Success",
-      "Thank you for contacting us. We will get back to you soon."
-    );
+   
+    showToast("success", "Success", "Thank you for contacting us. We will get back to you soon.")
     setEmail("");
   };
 
