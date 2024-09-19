@@ -21,7 +21,6 @@ import {
 } from "@/utils/authHelpers";
 import { API_URL } from "@/constants/Colors";
 import { AntDesign } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 import { useRouter, useFocusEffect } from "expo-router";
 
 const { height, width } = Dimensions.get("window");
@@ -35,7 +34,7 @@ const HalfScreenBackgroundLayout = () => {
 
   const router = useRouter();
 
-  const fetchUserOrders = async () => {
+  const fetchUserOrders = useCallback(async () => {
     if (!loggedIn) return;
 
     setLoading(true);
@@ -66,38 +65,42 @@ const HalfScreenBackgroundLayout = () => {
         } else {
           console.log("Token refresh failed, logging out user");
           await logoutUser();
+          setLoggedIn(false);
+          setUserData(null);
         }
       }
     } finally {
       setLoading(false);
     }
-  };
+  }, [loggedIn]);
 
-  const checkAuthStatus = async () => {
+  const checkAuthStatus = useCallback(async () => {
     const loggedInn = await isLoggedIn();
     setLoggedIn(loggedInn);
     if (loggedInn) {
       const userInfo = await getUserData();
       setUserData(userInfo);
       await fetchUserOrders();
+    } else {
+      setUserOrders([]);
     }
-  };
+  }, [fetchUserOrders]);
 
   useEffect(() => {
     checkAuthStatus();
-  }, []);
+  }, [checkAuthStatus]);
 
   useFocusEffect(
     useCallback(() => {
       checkAuthStatus();
-    }, [])
+    }, [checkAuthStatus])
   );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await fetchUserOrders();
+    await checkAuthStatus();
     setRefreshing(false);
-  }, [loggedIn]);
+  }, [checkAuthStatus]);
 
   const renderOrderItem = ({ item }) => (
     <View style={styles.orderItem}>
@@ -142,13 +145,6 @@ const HalfScreenBackgroundLayout = () => {
         </ImageBackground>
 
         <View style={styles.contentContainer}>
-          {/* {loggedIn && userData && (
-            <View style={styles.userInfoContainer}>
-              <Text style={styles.userInfoText}>User ID: {userData.id}</Text>
-              <Text style={styles.userInfoText}>Email: {userData.email}</Text>
-            </View>
-          )} */}
-
           <Text style={styles.contentText}>
             ORDER FIRST FROM YOUR FAVORITES
           </Text>
@@ -182,16 +178,18 @@ const HalfScreenBackgroundLayout = () => {
           <View style={styles.recentOrders}>
             <Text style={styles.recentOrderTitle}>My Recent Orders</Text>
             {loggedIn ? (
-              <FlatList
-                data={userOrders}
-                renderItem={renderOrderItem}
-                keyExtractor={(item) => item.id.toString()}
-                ListEmptyComponent={
-                  <Text style={styles.emptyListText}>
-                    {loading ? "Loading orders..." : "No recent orders"}
-                  </Text>
-                }
-              />
+              loading ? (
+                <Text style={styles.emptyListText}>Loading orders...</Text>
+              ) : (
+                <FlatList
+                  data={userOrders}
+                  renderItem={renderOrderItem}
+                  keyExtractor={(item) => item.id.toString()}
+                  ListEmptyComponent={
+                    <Text style={styles.emptyListText}>No recent orders</Text>
+                  }
+                />
+              )
             ) : (
               <Text style={styles.loginPrompt}>
                 Login to view your recent orders
@@ -333,7 +331,7 @@ const styles = StyleSheet.create({
     padding: 10,
     marginVertical: 5,
     borderRadius: 5,
-    borderColor: "#C65200",
+    borderColor: "#4169e1",
     borderWidth: 1,
   },
   orderItemText: {

@@ -23,7 +23,7 @@ const MyAccountLayout = () => {
         name="index"
         options={{
           title: "PROFILE",
-          headerLeft: () => <DrawerToggleButton tintColor="#FFF" />,
+          // headerLeft: () => <DrawerToggleButton tintColor="#FFF" />,
         }}
       />
     </Stack>

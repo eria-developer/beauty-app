@@ -1,9 +1,11 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, Button } from "react-native";
 import React from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
+import { useRouter } from "expo-router";
 
-const NotificationsScreen = () => {
+const NotificationsScreen = ({ navigation }) => {
+  const router = useRouter();
   return (
     <View style={styles.container}>
       <Ionicons
@@ -13,6 +15,10 @@ const NotificationsScreen = () => {
         style={styles.icon}
       />
       <Text style={styles.noNotifications}>No Notifications</Text>
+      <Button
+        title="Go to Home"
+        onPress={() => router.push("/(drawer)/(tabs)/home/")}
+      />
     </View>
   );
 };

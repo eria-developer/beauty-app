@@ -20,7 +20,7 @@ const _layout = () => {
         options={{
           headerShown: true,
           title: "MENU",
-          headerLeft: () => <DrawerToggleButton tintColor="#FFF" />,
+          // headerLeft: () => <DrawerToggleButton tintColor="#FFF" />,
         }}
       />
       <Stack.Screen

@@ -19,8 +19,8 @@ const MoreLayout = () => {
         name="index"
         options={{
           headerShown: true,
-          title: "MORE",
-          headerLeft: () => <DrawerToggleButton tintColor="#FFF" />,
+          title: "PROFILE",
+          // headerLeft: () => <DrawerToggleButton tintColor="#FFF" />,
         }}
       />
       <Stack.Screen

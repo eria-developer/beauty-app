@@ -18,7 +18,7 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: Colors.light.primary,
         headerShown: true,
-        headerLeft: () => <DrawerToggleButton tintColor="#fff" />,
+        // headerLeft: () => <DrawerToggleButton tintColor="#fff" />,
         headerStyle: {
           backgroundColor: Colors.light.primary,
         },
