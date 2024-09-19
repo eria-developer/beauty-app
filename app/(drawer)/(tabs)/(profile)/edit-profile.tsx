@@ -31,7 +31,7 @@ const EditProfileScreen = () => {
     const fetchUserData = async () => {
       const userData = await getUserData();
       if (userData) {
-        setProfilePic(userData.profilePicture);
+        setProfilePic(userData.profile_picture);
         setFirstName(userData.first_name);
         setLastName(userData.last_name);
         setEmail(userData.email);
@@ -58,8 +58,12 @@ const EditProfileScreen = () => {
       quality: 1,
     });
 
-    if (!pickerResult.cancelled) {
-      setProfilePic(pickerResult.uri);
+    if (
+      !pickerResult.cancelled &&
+      pickerResult.assets &&
+      pickerResult.assets.length > 0
+    ) {
+      setProfilePic(pickerResult.assets[0].uri);
     }
   };
 
@@ -69,7 +73,7 @@ const EditProfileScreen = () => {
       const updatedData = {
         first_name: firstName,
         last_name: lastName,
-        profilePicture: profilePic,
+        profile_picture: profilePic,
       };
       const result = await updateUserData(updatedData);
       if (result) {

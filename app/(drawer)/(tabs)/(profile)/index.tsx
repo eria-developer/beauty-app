@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { AntDesign, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 import { logoutUser, isLoggedIn, getAccessToken } from "@/utils/authHelpers";
 import { Colors } from "@/constants/Colors";
 import axios from "axios";
@@ -18,29 +19,35 @@ import { API_URL } from "@/constants/Colors";
 const ProfileScreen = () => {
   const [userData, setUserData] = useState(null);
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    const checkLoginAndFetchData = async () => {
-      const loggedIn = await isLoggedIn();
-      setIsUserLoggedIn(loggedIn);
-      if (loggedIn) {
-        try {
-          const token = await getAccessToken();
-          const response = await axios.get(`${API_URL}/accounts/profile/`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          setUserData(response.data);
-        } catch (error) {
-          console.error("Error fetching user profile:", error);
-          // Handle error (e.g., show error message to user)
-        }
+  const fetchUserData = useCallback(async () => {
+    setIsLoading(true);
+    const loggedIn = await isLoggedIn();
+    setIsUserLoggedIn(loggedIn);
+    if (loggedIn) {
+      try {
+        const token = await getAccessToken();
+        const response = await axios.get(`${API_URL}/accounts/profile/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setUserData(response.data);
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+        // Handle error (e.g., show error message to user)
       }
-    };
-    checkLoginAndFetchData();
+    }
+    setIsLoading(false);
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserData();
+    }, [fetchUserData])
+  );
 
   const handleLogout = async () => {
     await logoutUser();
@@ -56,6 +63,14 @@ const ProfileScreen = () => {
   const handleLogin = () => {
     router.push("/(auth)/login");
   };
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
 
   if (!isUserLoggedIn) {
     return (
@@ -77,7 +92,7 @@ const ProfileScreen = () => {
   if (!userData) {
     return (
       <View style={styles.loadingContainer}>
-        <Text>Loading...</Text>
+        <Text>No user data available.</Text>
       </View>
     );
   }
@@ -88,7 +103,8 @@ const ProfileScreen = () => {
         <View style={styles.profileInfoContainer}>
           <Image
             source={{
-              uri: userData.profilePicture || "https://via.placeholder.com/150",
+              uri:
+                userData.profile_picture || "https://via.placeholder.com/150",
             }}
             style={styles.profilePicture}
           />

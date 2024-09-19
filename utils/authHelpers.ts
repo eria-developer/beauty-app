@@ -128,28 +128,57 @@ export const decodeToken = (token) => {
   }
 };
 
-// export const getUserId = async () => {
-//   try {
-//     const userId = await AsyncStorage.getItem("userId");
-//     return userId;
-//   } catch (error) {
-//     console.error("Error getting user ID:", error);
-//     return null;
-//   }
-// };
-
 export const updateUserData = async (updatedData) => {
   try {
-    const axiosInstance = await getAuthenticatedAxiosInstance();
-    const response = await axiosInstance.patch('/accounts/profile/', updatedData);
-    
+    const token = await getAccessToken();
+
+    // Create a FormData object
+    const formData = new FormData();
+    Object.keys(updatedData).forEach((key) => {
+      if (key === "profile_picture" && updatedData[key]) {
+        // Check if the profile_picture is a string (URI) or an object
+        if (typeof updatedData[key] === "string") {
+          // If it's a string (URI), create a file object
+          const uriParts = updatedData[key].split(".");
+          const fileType = uriParts[uriParts.length - 1];
+
+          formData.append("profile_picture", {
+            uri: updatedData[key],
+            name: `profile_picture.${fileType}`,
+            type: `image/${fileType}`,
+          });
+        } else {
+          // If it's already an object, use it as is
+          formData.append("profile_picture", updatedData[key]);
+        }
+      } else {
+        formData.append(key, updatedData[key]);
+      }
+    });
+
+    const response = await axios.patch(
+      `${API_URL}/accounts/profile/`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
     if (response.data) {
       await saveUserData(response.data);
       return response.data;
     }
-    throw new Error('Failed to update user data');
+    throw new Error("Failed to update user data");
   } catch (error) {
-    console.error('Error updating user data:', error);
+    console.error("Error updating user data:", error);
+    if (axios.isAxiosError(error)) {
+      console.error("Response data:", error.response?.data);
+      console.error("Response status:", error.response?.status);
+      console.error("Response headers:", error.response?.headers);
+    }
     throw error;
   }
 };

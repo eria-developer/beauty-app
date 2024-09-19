@@ -30,5 +30,5 @@ export const Colors: any = {
 };
 
 // export const API_URL = "http://192.168.187.19:8000";
-// export const API_URL = "https://beauty-app-backend.onrender.com";
-export const API_URL = "http://100.42.188.216";
+export const API_URL = "https://beauty-app-backend.onrender.com";
+// export const API_URL = "http://100.42.188.216";
