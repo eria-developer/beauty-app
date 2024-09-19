@@ -23,6 +23,9 @@ const EditProfileScreen = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [loyaltyPoints, setLoyaltyPoints] = useState(0);
+  const [dateJoined, setDateJoined] = useState("");
+  const [lastLogin, setLastLogin] = useState("");
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -32,14 +35,16 @@ const EditProfileScreen = () => {
         setFirstName(userData.first_name);
         setLastName(userData.last_name);
         setEmail(userData.email);
+        setLoyaltyPoints(userData.loyalty_points);
+        setDateJoined(new Date(userData.date_joined).toLocaleDateString());
+        setLastLogin(new Date(userData.last_login).toLocaleDateString());
       }
     };
     fetchUserData();
   }, []);
 
   const handleProfilePicSelect = async () => {
-    const permissionResult =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (permissionResult.granted === false) {
       alert("Permission to access camera roll is required!");
       return;
@@ -63,12 +68,15 @@ const EditProfileScreen = () => {
       const updatedData = {
         first_name: firstName,
         last_name: lastName,
-        email: email,
         profilePicture: profilePic,
       };
-      await updateUserData(updatedData);
-      showToast("success", "Success", "Profile updated successfully!");
-      router.back();
+      const result = await updateUserData(updatedData);
+      if (result) {
+        showToast("success", "Success", "Profile updated successfully!");
+        router.back();
+      } else {
+        throw new Error("Failed to update profile");
+      }
     } catch (error) {
       console.error("Update profile error:", error);
       showToast(
@@ -127,15 +135,24 @@ const EditProfileScreen = () => {
             />
           </View>
 
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder="Email"
-              placeholderTextColor="#a9a9a9"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-            />
+          <View style={styles.infoContainer}>
+            <Text style={styles.infoLabel}>Email:</Text>
+            <Text style={styles.infoValue}>{email}</Text>
+          </View>
+
+          <View style={styles.infoContainer}>
+            <Text style={styles.infoLabel}>Loyalty Points:</Text>
+            <Text style={styles.infoValue}>{loyaltyPoints}</Text>
+          </View>
+
+          <View style={styles.infoContainer}>
+            <Text style={styles.infoLabel}>Date Joined:</Text>
+            <Text style={styles.infoValue}>{dateJoined}</Text>
+          </View>
+
+          <View style={styles.infoContainer}>
+            <Text style={styles.infoLabel}>Last Login:</Text>
+            <Text style={styles.infoValue}>{lastLogin}</Text>
           </View>
 
           <TouchableOpacity

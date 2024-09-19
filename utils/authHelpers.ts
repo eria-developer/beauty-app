@@ -137,3 +137,19 @@ export const decodeToken = (token) => {
 //     return null;
 //   }
 // };
+
+export const updateUserData = async (updatedData) => {
+  try {
+    const axiosInstance = await getAuthenticatedAxiosInstance();
+    const response = await axiosInstance.patch('/accounts/profile/', updatedData);
+    
+    if (response.data) {
+      await saveUserData(response.data);
+      return response.data;
+    }
+    throw new Error('Failed to update user data');
+  } catch (error) {
+    console.error('Error updating user data:', error);
+    throw error;
+  }
+};

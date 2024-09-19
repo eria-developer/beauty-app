@@ -10,8 +10,10 @@ import {
 } from "react-native";
 import { AntDesign, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { getUserData, logoutUser, isLoggedIn } from "@/utils/authHelpers";
+import { logoutUser, isLoggedIn, getAccessToken } from "@/utils/authHelpers";
 import { Colors } from "@/constants/Colors";
+import axios from "axios";
+import { API_URL } from "@/constants/Colors";
 
 const ProfileScreen = () => {
   const [userData, setUserData] = useState(null);
@@ -23,8 +25,18 @@ const ProfileScreen = () => {
       const loggedIn = await isLoggedIn();
       setIsUserLoggedIn(loggedIn);
       if (loggedIn) {
-        const user = await getUserData();
-        setUserData(user);
+        try {
+          const token = await getAccessToken();
+          const response = await axios.get(`${API_URL}/accounts/profile/`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          setUserData(response.data);
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+          // Handle error (e.g., show error message to user)
+        }
       }
     };
     checkLoginAndFetchData();
@@ -38,7 +50,7 @@ const ProfileScreen = () => {
   };
 
   const handleEditProfile = () => {
-    router.push("/(drawer)/(tabs)/(profile)/edit-profile");
+    router.push("edit-profile");
   };
 
   const handleLogin = () => {
@@ -81,7 +93,7 @@ const ProfileScreen = () => {
             style={styles.profilePicture}
           />
           <Text style={styles.userName}>
-            {userData.full_name || "User Name"}
+            {`${userData.first_name} ${userData.last_name}` || "User Name"}
           </Text>
           <Text style={styles.userEmail}>{userData.email}</Text>
           <TouchableOpacity
@@ -127,11 +139,11 @@ const ProfileScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#4169e1", 
+    backgroundColor: "#4169e1",
   },
   container: {
     flex: 1,
-    backgroundColor: "#f0f8ff", 
+    backgroundColor: "#f0f8ff",
   },
   loadingContainer: {
     flex: 1,

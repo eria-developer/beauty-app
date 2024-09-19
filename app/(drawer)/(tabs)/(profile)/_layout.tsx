@@ -23,10 +23,6 @@ const MoreLayout = () => {
           headerLeft: () => <DrawerToggleButton tintColor="#FFF" />,
         }}
       />
-      {/* <Stack.Screen
-        name="e-gift-card"
-        options={{ headerShown: false, title: "E-GIFT CARD" }}
-      /> */}
       <Stack.Screen
         name="edit-profile"
         options={{ headerShown: false, title: "EDIT PROFILE" }}
