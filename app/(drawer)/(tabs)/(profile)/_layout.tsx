@@ -31,27 +31,6 @@ const MoreLayout = () => {
         name="edit-profile"
         options={{ headerShown: false, title: "EDIT PROFILE" }}
       />
-      {/* <Stack.Screen
-        name="deals"
-        options={{ headerShown: true, title: "DEALS" }}
-      />
-      <Stack.Screen
-        name="terms-and-conditions"
-        options={{ headerShown: true, title: "TERMS & CONDITIONS" }}
-      />
-      <Stack.Screen
-        name="privacy-policy"
-        options={{ headerShown: true, title: "PRIVACY POLICY" }}
-      />
-      <Stack.Screen name="(about-us)" options={{ headerShown: false }} />
-      <Stack.Screen
-        name="gallery"
-        options={{ headerShown: true, title: "GALLERY" }}
-      />
-      <Stack.Screen
-        name="contact-support"
-        options={{ headerShown: true, title: "CONTACT SUPPORT" }}
-      /> */}
     </Stack>
   );
 };

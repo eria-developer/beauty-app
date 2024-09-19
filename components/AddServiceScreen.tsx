@@ -10,11 +10,10 @@ import {
   Alert,
   Platform,
   ActivityIndicator,
+  SafeAreaView,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import { Colors } from "@/constants/Colors";
 import { MaterialIcons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
 import { API_URL } from "@/constants/Colors";
@@ -24,27 +23,34 @@ import {
   refreshAccessToken,
   getUserId,
 } from "@/utils/authHelpers";
-import { extractUserIdFromToken } from "@/utils/tokenUtils";
-// import { getUserId } from "@/utils/authHelpers";
-// import { getAccessToken, refreshAccessToken } from "@/utils/authHelpers";
 
-const AddProductServiceScreen = () => {
+const AddServiceScreen = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
-  const [stock, setStock] = useState("");
-  const [category, setCategory] = useState("perfumes");
+  const [category, setCategory] = useState("");
+  const [duration, setDuration] = useState("");
   const [image, setImage] = useState(null);
   const [categories, setCategories] = useState([]);
-
-  const [duration, setDuration] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isCategoryLoading, setIsCategoryLoading] = useState(true);
 
   useEffect(() => {
     fetchCategories();
   }, []);
 
-  const fetchCategories = async () => {};
+  const fetchCategories = async () => {
+    setIsCategoryLoading(true);
+    try {
+      const response = await axios.get(`${API_URL}/products/categories`);
+      setCategories(response.data);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      showToast("error", "Error", "Failed to fetch categories");
+    } finally {
+      setIsCategoryLoading(false);
+    }
+  };
 
   const pickImage = async () => {
     try {
@@ -77,7 +83,6 @@ const AddProductServiceScreen = () => {
   const handleSubmit = async () => {
     setIsLoading(true);
     try {
-      // Retrieve the authentication token
       let token = await getAccessToken();
 
       if (!token) {
@@ -89,7 +94,6 @@ const AddProductServiceScreen = () => {
         throw new Error("Failed to retrieve or refresh authentication token");
       }
 
-      // Retrieve the user ID
       let userId;
       try {
         userId = await getUserId();
@@ -98,28 +102,13 @@ const AddProductServiceScreen = () => {
         throw new Error("Failed to retrieve user ID. Please log in again.");
       }
 
-      // Log the data before appending to FormData
-      console.log("Data being submitted:");
-      console.log("Category:", category);
-      console.log("Name:", name);
-      console.log("Description:", description);
-      console.log("Price:", price);
-      console.log("Stock:", stock);
-      console.log("Seller:", userId);
-
-      if (image) {
-        console.log("Image URI:", image.uri);
-      } else {
-        console.log("No image selected.");
-      }
-
       const formData = new FormData();
       formData.append("category", category);
       formData.append("name", name);
       formData.append("description", description);
       formData.append("price", price);
-      formData.append("stock", stock);
-      formData.append("seller", userId);
+      formData.append("duration", duration);
+      formData.append("provider", userId);
 
       if (image) {
         const imageFile = {
@@ -128,13 +117,13 @@ const AddProductServiceScreen = () => {
               ? image.uri.replace("file://", "")
               : image.uri,
           type: "image/jpeg",
-          name: "product_image.jpg",
+          name: "service_image.jpg",
         };
         formData.append("image", imageFile);
       }
 
       const response = await axios.post(
-        `${API_URL}/products/products/`,
+        `${API_URL}/services/services/`,
         formData,
         {
           headers: {
@@ -144,19 +133,19 @@ const AddProductServiceScreen = () => {
         }
       );
 
-      console.log("Added product:", response.data);
-      showToast("success", "Success", "Product added successfully");
+      console.log("Added service:", response.data);
+      showToast("success", "Success", "Service added successfully");
 
       // Reset form fields
       setName("");
       setDescription("");
       setPrice("");
-      setStock("");
+      setDuration("");
       setCategory("");
       setImage(null);
     } catch (error) {
       console.error("Error in handleSubmit:", error);
-      let errorMessage = "Failed to add product";
+      let errorMessage = "Failed to add service";
       if (error.response && error.response.data) {
         errorMessage += `: ${JSON.stringify(error.response.data)}`;
       } else if (error.message) {
@@ -169,11 +158,9 @@ const AddProductServiceScreen = () => {
   };
 
   return (
-    <LinearGradient colors={["white", "#DFB7BF"]} style={styles.background}>
-      <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <View style={styles.container}>
-          <Text style={styles.title}>Add New Service</Text>
-
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView style={styles.container}>
+        <View style={styles.formContainer}>
           <View style={styles.formGroup}>
             <Text style={styles.label}>Name</Text>
             <TextInput
@@ -181,7 +168,7 @@ const AddProductServiceScreen = () => {
               value={name}
               onChangeText={setName}
               placeholder="Enter service name"
-              placeholderTextColor={Colors.light.primary}
+              placeholderTextColor="#999"
             />
           </View>
 
@@ -192,7 +179,7 @@ const AddProductServiceScreen = () => {
               value={description}
               onChangeText={setDescription}
               placeholder="Describe your service"
-              placeholderTextColor={Colors.light.primary}
+              placeholderTextColor="#999"
               multiline
               numberOfLines={4}
             />
@@ -205,25 +192,29 @@ const AddProductServiceScreen = () => {
               value={price}
               onChangeText={setPrice}
               placeholder="Enter price"
-              placeholderTextColor={Colors.light.primary}
+              placeholderTextColor="#999"
               keyboardType="numeric"
             />
           </View>
 
           <View style={styles.formGroup}>
             <Text style={styles.label}>Category</Text>
-            <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={category}
-                onValueChange={(itemValue) => setCategory(itemValue)}
-                style={styles.picker}
-              >
-                <Picker.Item label="Select a Category" value="" />
-                <Picker.Item label="Consultation" value="consultation" />
-                <Picker.Item label="Repair" value="repair" />
-                <Picker.Item label="Installation" value="installation" />
-              </Picker>
-            </View>
+            {isCategoryLoading ? (
+              <ActivityIndicator size="small" color="#4169e1" />
+            ) : (
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={category}
+                  onValueChange={(itemValue) => setCategory(itemValue)}
+                  style={styles.picker}
+                >
+                  <Picker.Item label="Select a Category" value="" />
+                  {categories.map((cat) => (
+                    <Picker.Item key={cat.id} label={cat.name} value={cat.id} />
+                  ))}
+                </Picker>
+              </View>
+            )}
           </View>
 
           <View style={styles.formGroup}>
@@ -233,9 +224,26 @@ const AddProductServiceScreen = () => {
               value={duration}
               onChangeText={setDuration}
               placeholder="Enter service duration"
-              placeholderTextColor={Colors.light.primary}
+              placeholderTextColor="#999"
               keyboardType="numeric"
             />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Image</Text>
+            <TouchableOpacity onPress={pickImage} style={styles.imageUpload}>
+              {image ? (
+                <Image
+                  source={{ uri: image.uri }}
+                  style={styles.uploadedImage}
+                />
+              ) : (
+                <View style={styles.uploadPlaceholder}>
+                  <MaterialIcons name="add-a-photo" size={24} color="#4169e1" />
+                  <Text style={styles.uploadText}>Upload Image</Text>
+                </View>
+              )}
+            </TouchableOpacity>
           </View>
 
           <TouchableOpacity
@@ -244,33 +252,29 @@ const AddProductServiceScreen = () => {
             disabled={isLoading}
           >
             {isLoading ? (
-              <ActivityIndicator size="small" color={Colors.light.background} />
+              <ActivityIndicator size="small" color="#fff" />
             ) : (
               <Text style={styles.submitButtonText}>Add Service</Text>
             )}
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </LinearGradient>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  background: {
+  safeArea: {
     flex: 1,
-  },
-  scrollViewContent: {
-    flexGrow: 1,
+    backgroundColor: "#4169e1",
   },
   container: {
     flex: 1,
-    padding: 20,
+    backgroundColor: "#f0f8ff",
   },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: Colors.light.primary,
-    marginBottom: 20,
+  formContainer: {
+    padding: 20,
+    backgroundColor: "#ffffff",
   },
   formGroup: {
     marginBottom: 20,
@@ -278,40 +282,41 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: "600",
-    color: Colors.light.rearText,
+    color: "#333",
     marginBottom: 5,
   },
   input: {
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    backgroundColor: "#f0f8ff",
     borderWidth: 1,
-    borderColor: Colors.light.primary,
+    borderColor: "#4169e1",
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 8,
     fontSize: 16,
-    color: Colors.light.primary,
+    color: "#333",
   },
   textArea: {
     height: 100,
   },
-  disabledButton: {},
   pickerContainer: {
     borderWidth: 1,
-    borderColor: Colors.light.primary,
+    borderColor: "#4169e1",
     borderRadius: 8,
+    backgroundColor: "#f0f8ff",
   },
   picker: {
     height: 50,
     width: "100%",
+    color: "#333",
   },
   imageUpload: {
     borderWidth: 1,
-    borderColor: Colors.light.primary,
+    borderColor: "#4169e1",
     borderRadius: 8,
     height: 150,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    backgroundColor: "#f0f8ff",
   },
   uploadedImage: {
     width: "100%",
@@ -324,19 +329,22 @@ const styles = StyleSheet.create({
   },
   uploadText: {
     marginTop: 10,
-    color: Colors.light.primary,
+    color: "#4169e1",
   },
   submitButton: {
-    backgroundColor: Colors.light.primary,
+    backgroundColor: "#4169e1",
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",
   },
   submitButtonText: {
-    color: Colors.light.background,
+    color: "#ffffff",
     fontSize: 18,
     fontWeight: "600",
   },
+  disabledButton: {
+    opacity: 0.7,
+  },
 });
 
-export default AddProductServiceScreen;
+export default AddServiceScreen;

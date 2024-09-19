@@ -10,9 +10,9 @@ const AddProductServiceScreen = () => {
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarActiveTintColor: Colors.light.primary,
+        tabBarActiveTintColor: Colors.light.royalBlue,
         tabBarInactiveTintColor: Colors.light.rearText,
-        tabBarIndicatorStyle: { backgroundColor: Colors.light.primary },
+        tabBarIndicatorStyle: { backgroundColor: Colors.light.royalBlue },
         tabBarStyle: { backgroundColor: "white" },
       }}
     >

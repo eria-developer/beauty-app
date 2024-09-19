@@ -14,6 +14,7 @@ import { API_URL } from "@/constants/Colors";
 import { FlashList } from "@shopify/flash-list";
 import SearchInput from "@/components/SearchInput";
 import FloatingCartIcon from "@/components/FloatingCart";
+import { MaterialIcons } from "@expo/vector-icons";
 
 const CategoryProducts = () => {
   const [products, setProducts] = useState([]);

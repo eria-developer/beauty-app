@@ -160,10 +160,6 @@ const AddProductServiceScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Add New Product</Text>
-        </View>
-
         <View style={styles.formContainer}>
           <View style={styles.formGroup}>
             <Text style={styles.label}>Name</Text>

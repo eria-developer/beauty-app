@@ -1,13 +1,63 @@
-import React from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  RefreshControl,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import HowItWorksComponent from "@/components/HowItWorksComponent";
+import { getAuthenticatedAxiosInstance } from "@/utils/authHelpers";
+import { API_URL } from "@/constants/Colors";
+
+interface UserProfile {
+  id: number;
+  email: string;
+  first_name: string;
+  last_name: string;
+  loyalty_points: number;
+  date_joined: string;
+  last_login: string;
+}
 
 const RewardsScreen = () => {
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchUserProfile = useCallback(async () => {
+    try {
+      const axiosInstance = await getAuthenticatedAxiosInstance();
+      const response = await axiosInstance.get(`${API_URL}/accounts/profile/`);
+      setUserProfile(response.data);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, [fetchUserProfile]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchUserProfile();
+    setRefreshing(false);
+  }, [fetchUserProfile]);
+
+  const progressPercentage = userProfile
+    ? (userProfile.loyalty_points / 1000000) * 100
+    : 0;
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView style={styles.container}>
+      <ScrollView
+        style={styles.container}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         <View style={styles.content}>
           <View style={styles.welcomeCard}>
             <Text style={styles.welcomeTitle}>Welcome to</Text>
@@ -19,8 +69,17 @@ const RewardsScreen = () => {
 
           <View style={styles.pointsCard}>
             <Text style={styles.pointsTitle}>Points Earned</Text>
-            <Text style={styles.pointsCount}>0 / 10,00,000</Text>
-            <View style={styles.progressBar} />
+            <Text style={styles.pointsCount}>
+              {userProfile ? userProfile.loyalty_points || "0" : "0"} / 10000
+            </Text>
+            <View style={styles.progressBarContainer}>
+              <View
+                style={[
+                  styles.progressBar,
+                  { width: `${progressPercentage}%` },
+                ]}
+              />
+            </View>
           </View>
 
           <View>
@@ -161,10 +220,15 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 8,
   },
-  progressBar: {
+  progressBarContainer: {
     height: 4,
     backgroundColor: "#4169e150",
     borderRadius: 2,
+    overflow: "hidden",
+  },
+  progressBar: {
+    height: "100%",
+    backgroundColor: "#4169e1",
   },
   sectionTitle: {
     fontSize: 20,
