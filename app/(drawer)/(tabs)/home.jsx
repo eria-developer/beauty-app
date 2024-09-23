@@ -104,13 +104,20 @@ const HalfScreenBackgroundLayout = () => {
 
   const renderOrderItem = ({ item }) => (
     <View style={styles.orderItem}>
-      <Text style={styles.orderItemText}>Order #{item.id}</Text>
-      <Text style={styles.orderItemText}>
-        Date: {new Date(item.created_at).toLocaleDateString()}
-      </Text>
-      <Text style={styles.orderItemText}>
-        Status: {item.is_paid ? "Paid" : "Unpaid"}
-      </Text>
+      <View>
+        <Text style={styles.orderItemText}>Order #{item.id}</Text>
+        <Text style={styles.orderItemText}>
+          Date: {new Date(item.created_at).toLocaleDateString()}
+        </Text>
+        <Text style={styles.orderItemText}>
+          Points:
+          {item.loyalty_points_earned}
+        </Text>
+      </View>
+      <View style={[styles.statusBadge, styles[`status${item.status}`]]}>
+        <Text style={styles.statusText}>{item.status}</Text>
+        <Text>{item.status}</Text>
+      </View>
     </View>
   );
 
@@ -333,6 +340,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderColor: "#4169e1",
     borderWidth: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   orderItemText: {
     fontSize: 14,
@@ -348,6 +358,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: "center",
     color: "#555",
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  statusText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  statusPending: {
+    backgroundColor: "#ffa500", // Orange
+  },
+  statusProcessing: {
+    backgroundColor: "#4169e1", // Royal Blue
+  },
+  statusCompleted: {
+    backgroundColor: "#32cd32", // Lime Green
+  },
+  statusCancelled: {
+    backgroundColor: "#dc143c", // Crimson
   },
 });
 
