@@ -27,6 +27,8 @@ const MoreLayout = () => {
         name="edit-profile"
         options={{ headerShown: false, title: "EDIT PROFILE" }}
       />
+      <Stack.Screen name="(received-orders)" options={{ headerShown: false }} />
+      {/* <Stack.Screen name="(my-products)" options={{ headerShown: false }} /> */}
     </Stack>
   );
 };

@@ -63,25 +63,36 @@ const AddProductServiceScreen = () => {
   }
 
   return (
-    <Tab.Navigator
-      screenOptions={{
-        tabBarActiveTintColor: Colors.light.royalBlue,
-        tabBarInactiveTintColor: Colors.light.rearText,
-        tabBarIndicatorStyle: { backgroundColor: Colors.light.royalBlue },
-        tabBarStyle: { backgroundColor: "white" },
-      }}
-    >
-      <Tab.Screen
-        name="AddProduct"
-        component={AddProductScreen}
-        options={{ tabBarLabel: "Add Product" }}
-      />
-      <Tab.Screen
-        name="AddService"
-        component={AddServiceScreen}
-        options={{ tabBarLabel: "Add Service" }}
-      />
-    </Tab.Navigator>
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ height: '100%' }}>
+        <View style={{ flex: 1, backgroundColor: 'white' }}>
+          <Tab.Navigator
+            screenOptions={{
+              tabBarActiveTintColor: Colors.light.royalBlue,
+              tabBarInactiveTintColor: Colors.light.rearText,
+              tabBarIndicatorStyle: { backgroundColor: Colors.light.royalBlue },
+              tabBarStyle: { backgroundColor: "white" },
+              tabBarPressColor: 'transparent',
+            }}
+            lazy={false}
+            swipeEnabled={true}
+          >
+            <Tab.Screen
+              name="AddProduct"
+              component={AddProductScreen}
+              options={{ tabBarLabel: "Add Product" }}
+              key="AddProduct"
+            />
+            <Tab.Screen
+              name="AddService"
+              component={AddServiceScreen}
+              options={{ tabBarLabel: "Add Service" }}
+              key="AddService"
+            />
+          </Tab.Navigator>
+        </View>
+      </View>
+    </SafeAreaView>
   );
 };
 

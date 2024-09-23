@@ -15,8 +15,10 @@ import { logoutUser, isLoggedIn, getAccessToken } from "@/utils/authHelpers";
 import { Colors } from "@/constants/Colors";
 import axios from "axios";
 import { API_URL } from "@/constants/Colors";
+import { useAuth } from "@/providers/AuthProvider";
 
 const ProfileScreen = () => {
+  const { user } = useAuth();
   const [userData, setUserData] = useState(null);
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -62,6 +64,10 @@ const ProfileScreen = () => {
 
   const handleLogin = () => {
     router.push("/(auth)/login");
+  };
+
+  const handleNavigation = (screen: string) => {
+    router.push(screen);
   };
 
   if (isLoading) {
@@ -121,23 +127,44 @@ const ProfileScreen = () => {
         </View>
 
         <View style={styles.optionsContainer}>
-          <TouchableOpacity style={styles.optionItem}>
-            <Ionicons name="calendar" size={24} color="#4169e1" />
-            <Text style={styles.optionText}>My Appointments</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.optionItem}>
+          {user && user.role === "admin" && (
+            <TouchableOpacity
+              style={styles.optionItem}
+              onPress={() =>
+                handleNavigation("/(drawer)/(tabs)/(profile)/(received-orders)")
+              }
+            >
+              <Ionicons name="list" size={24} color="#4169e1" />
+              <Text style={styles.optionText}>Received Orders</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity
+            style={styles.optionItem}
+            onPress={() => handleNavigation("/(drawer)/favorite-services")}
+          >
             <Ionicons name="heart" size={24} color="#4169e1" />
-            <Text style={styles.optionText}>Favorite Services</Text>
+            <Text style={styles.optionText}>Favorites</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.optionItem}>
-            <Ionicons name="card" size={24} color="#4169e1" />
-            <Text style={styles.optionText}>Payment Methods</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.optionItem}>
+          {/* <TouchableOpacity
+            style={styles.optionItem}
+            onPress={() =>
+              handleNavigation("/(drawer)/(tabs)/(profile)/(my-products)/")
+            }
+          >
+            <Ionicons name="cube" size={24} color="#4169e1" />
+            <Text style={styles.optionText}>My Products</Text>
+          </TouchableOpacity> */}
+          <TouchableOpacity
+            style={styles.optionItem}
+            onPress={() => handleNavigation("/(drawer)/notifications")}
+          >
             <Ionicons name="notifications" size={24} color="#4169e1" />
             <Text style={styles.optionText}>Notifications</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.optionItem}>
+          <TouchableOpacity
+            style={styles.optionItem}
+            onPress={() => handleNavigation("/(drawer)/settings")}
+          >
             <Ionicons name="settings" size={24} color="#4169e1" />
             <Text style={styles.optionText}>Settings</Text>
           </TouchableOpacity>

@@ -9,12 +9,14 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
-import { useRoute } from "@react-navigation/native";
+import { useRoute, useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import FloatingCartIcon from "@/components/FloatingCart";
 import axios from "axios";
 import { API_URL } from "@/constants/Colors";
 import { showToast } from "@/utils/toastConfig";
+import { isLoggedIn } from "@/utils/authHelpers";
+import { useRouter } from "expo-router";
 
 const ProductDetailScreen = () => {
   const [product, setProduct] = useState(null);
@@ -24,6 +26,8 @@ const ProductDetailScreen = () => {
   const [quantity, setQuantity] = useState(1);
   const route = useRoute();
   const { productId } = route.params;
+  // const navigation = useNavigation();
+  const router = useRouter();
 
   useEffect(() => {
     fetchProductDetails();
@@ -35,6 +39,7 @@ const ProductDetailScreen = () => {
         `${API_URL}/products/products/${productId}/`
       );
       setProduct(productResponse.data);
+      // console.log(productResponse.data.category.name);
       const imageUrls = productResponse.data.image
         ? `${API_URL}${productResponse.data.image}`
         : null;
@@ -57,6 +62,17 @@ const ProductDetailScreen = () => {
 
   const addToCart = async () => {
     try {
+      const loggedIn = await isLoggedIn();
+      if (!loggedIn) {
+        showToast(
+          "info",
+          "Login Required",
+          "Please log in to add items to your cart."
+        );
+        router.navigate("/(auth)/login");
+        return;
+      }
+
       const cart = await AsyncStorage.getItem("cart");
       const parsedCart = cart ? JSON.parse(cart) : [];
 
