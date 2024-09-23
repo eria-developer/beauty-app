@@ -1,139 +1,231 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
-  StyleSheet,
+  Image,
   TouchableOpacity,
+  StyleSheet,
   SafeAreaView,
+  FlatList,
+  RefreshControl,
+  Dimensions,
+  ActivityIndicator,
 } from "react-native";
-import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
-import { useFocusEffect, useRouter } from "expo-router";
-import { Colors } from "@/constants/Colors";
-import AddProductScreen from "@/components/AddProductScreen";
-import AddServiceScreen from "@/components/AddServiceScreen";
-import { isLoggedIn } from "@/utils/authHelpers";
+import { useNavigation } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+import { API_URL } from "@/constants/Colors";
+import { router } from "expo-router";
 
-const Tab = createMaterialTopTabNavigator();
+const { width } = Dimensions.get("window");
+const COLUMN_WIDTH = width / 2 - 24; // 2 columns with 16px horizontal padding
 
-const AddProductServiceScreen = () => {
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
+const FavoriteScreen = () => {
+  const [favorites, setFavorites] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const navigation = useNavigation();
 
-  const checkLoginStatus = useCallback(async () => {
-    setIsLoading(true);
-    const loggedIn = await isLoggedIn();
-    setIsUserLoggedIn(loggedIn);
-    setIsLoading(false);
+  const loadFavorites = useCallback(async () => {
+    try {
+      const favoritesData = await AsyncStorage.getItem("favorites");
+      const parsedFavorites = favoritesData ? JSON.parse(favoritesData) : [];
+      const favoriteProducts = await Promise.all(
+        parsedFavorites.map(async (id) => {
+          const response = await axios.get(
+            `${API_URL}/products/products/${id}`
+          );
+          return response.data;
+        })
+      );
+      setFavorites(favoriteProducts);
+    } catch (error) {
+      console.error("Error loading favorites:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      checkLoginStatus();
-    }, [checkLoginStatus])
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      loadFavorites();
+    });
+
+    return unsubscribe;
+  }, [navigation, loadFavorites]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    loadFavorites();
+  }, [loadFavorites]);
+
+  const removeFavorite = useCallback(async (productId) => {
+    try {
+      const favoritesData = await AsyncStorage.getItem("favorites");
+      const parsedFavorites = favoritesData ? JSON.parse(favoritesData) : [];
+      const updatedFavorites = parsedFavorites.filter((id) => id !== productId);
+      await AsyncStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+      setFavorites((prevFavorites) =>
+        prevFavorites.filter((product) => product.id !== productId)
+      );
+    } catch (error) {
+      console.error("Error removing favorite:", error);
+    }
+  }, []);
+
+  const renderFavoriteItem = useCallback(
+    ({ item }) => (
+      <View style={styles.itemContainer}>
+        <TouchableOpacity
+          style={styles.itemCard}
+          onPress={() =>
+            navigation.navigate("product-details", { productId: item.id })
+          }
+        >
+          <Image
+            source={{ uri: `${API_URL}${item.image}` }}
+            style={styles.itemImage}
+          />
+          <View style={styles.itemDetails}>
+            <Text style={styles.itemName} numberOfLines={2}>
+              {item.name}
+            </Text>
+            <Text style={styles.itemPrice}>${item.price}</Text>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.removeButton}
+          onPress={() => removeFavorite(item.id)}
+        >
+          <Ionicons name="close-circle" size={24} color="#FF6B6B" />
+        </TouchableOpacity>
+      </View>
+    ),
+    [navigation, removeFavorite]
   );
 
-  const handleLogin = () => {
-    router.push("/(auth)/login");
-  };
-
-  if (isLoading) {
+  if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <Text>Loading...</Text>
+        <ActivityIndicator size="large" color="#4169E1" />
       </View>
-    );
-  }
-
-  if (!isUserLoggedIn) {
-    return (
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.container}>
-          <View style={styles.notLoggedInContainer}>
-            <Text style={styles.notLoggedInText}>
-              You need to be logged in to access this screen.
-            </Text>
-            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-              <Text style={styles.loginButtonText}>Go to Login</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <View style={{ height: '100%' }}>
-        <View style={{ flex: 1, backgroundColor: 'white' }}>
-          <Tab.Navigator
-            screenOptions={{
-              tabBarActiveTintColor: Colors.light.royalBlue,
-              tabBarInactiveTintColor: Colors.light.rearText,
-              tabBarIndicatorStyle: { backgroundColor: Colors.light.royalBlue },
-              tabBarStyle: { backgroundColor: "white" },
-              tabBarPressColor: 'transparent',
-            }}
-            lazy={false}
-            swipeEnabled={true}
+    <SafeAreaView style={styles.container}>
+      {/* <LinearGradient colors={["#4169E1", "#1E3A8A"]} style={styles.header}>
+        <Text style={styles.headerTitle}>Your Favorites</Text>
+      </LinearGradient> */}
+      {favorites.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Ionicons name="heart-outline" size={64} color="#4169E1" />
+          <Text style={styles.emptyText}>Your favorites list is empty</Text>
+          <TouchableOpacity
+            style={styles.exploreButton}
+            onPress={() => router.push("(drawer)/(tabs)/(order)/")}
           >
-            <Tab.Screen
-              name="AddProduct"
-              component={AddProductScreen}
-              options={{ tabBarLabel: "Add Product" }}
-              key="AddProduct"
-            />
-            <Tab.Screen
-              name="AddService"
-              component={AddServiceScreen}
-              options={{ tabBarLabel: "Add Service" }}
-              key="AddService"
-            />
-          </Tab.Navigator>
+            <Text style={styles.exploreButtonText}>Explore Products</Text>
+          </TouchableOpacity>
         </View>
-      </View>
+      ) : (
+        <FlatList
+          data={favorites}
+          renderItem={renderFavoriteItem}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.listContainer}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        />
+      )}
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: Colors.light.primary,
-  },
   container: {
     flex: 1,
-    backgroundColor: "#f0f8ff",
+    backgroundColor: "#F8FAFC",
+  },
+  listContainer: {
+    padding: 16,
+  },
+  itemContainer: {
+    marginBottom: 16,
+    borderRadius: 16,
+    backgroundColor: "#FFFFFF",
+    overflow: "hidden",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  itemCard: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  itemImage: {
+    width: 100,
+    height: 100,
+    resizeMode: "cover",
+  },
+  itemDetails: {
+    flex: 1,
+    padding: 12,
+  },
+  itemName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333333",
+    marginBottom: 4,
+  },
+  itemPrice: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#4169E1",
+  },
+  removeButton: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    borderRadius: 12,
+    padding: 4,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f0f8ff",
   },
-  notLoggedInContainer: {
+  emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    padding: 24,
   },
-  notLoggedInText: {
+  emptyText: {
     fontSize: 18,
+    color: "#4A5568",
     textAlign: "center",
-    marginBottom: 20,
-    color: "#333",
+    marginTop: 16,
+    marginBottom: 24,
   },
-  loginButton: {
-    backgroundColor: Colors.light.primary,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
+  exploreButton: {
+    backgroundColor: "#4169E1",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 24,
   },
-  loginButtonText: {
-    color: "#ffffff",
-    fontWeight: "bold",
+  exploreButtonText: {
+    color: "#FFFFFF",
     fontSize: 16,
+    fontWeight: "600",
   },
 });
 
-export default AddProductServiceScreen;
+export default FavoriteScreen;

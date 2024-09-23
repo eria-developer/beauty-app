@@ -13,14 +13,43 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import { FlashList } from "@shopify/flash-list";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
 import { API_URL } from "@/constants/Colors";
 import SearchInput from "@/components/SearchInput";
-// import { FloatingCartIcon } from "@/components/FloatingCartIcon";
 import FloatingCartIcon from "@/components/FloatingCart";
 import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const getFavorites = async () => {
+  try {
+    const favorites = await AsyncStorage.getItem("favorites");
+    return favorites ? JSON.parse(favorites) : [];
+  } catch (error) {
+    console.error("Error getting favorites:", error);
+    return [];
+  }
+};
+
+const saveFavorites = async (favorites) => {
+  try {
+    await AsyncStorage.setItem("favorites", JSON.stringify(favorites));
+  } catch (error) {
+    console.error("Error saving favorites:", error);
+  }
+};
+
+const toggleFavorite = async (productId) => {
+  const favorites = await getFavorites();
+  const index = favorites.indexOf(productId);
+  if (index > -1) {
+    favorites.splice(index, 1);
+  } else {
+    favorites.push(productId);
+  }
+  await saveFavorites(favorites);
+  return favorites;
+};
 
 const MenuScreen = () => {
   const [searchInput, setSearchInput] = useState("");
@@ -31,12 +60,19 @@ const MenuScreen = () => {
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [recentProductsLoading, setRecentProductsLoading] = useState(true);
   const [imageLoadingStatus, setImageLoadingStatus] = useState({});
+  const [favorites, setFavorites] = useState([]);
   const navigation = useNavigation();
 
   useEffect(() => {
     fetchCategories();
     fetchRecentProducts();
+    loadFavorites();
   }, []);
+
+  const loadFavorites = async () => {
+    const loadedFavorites = await getFavorites();
+    setFavorites(loadedFavorites);
+  };
 
   const fetchCategories = async () => {
     setCategoriesLoading(true);
@@ -60,7 +96,6 @@ const MenuScreen = () => {
           ordering: "created_at",
         },
       });
-      // Take only the first 8 products from the response
       setRecentProducts(response.data.slice(-9));
     } catch (error) {
       console.error("Error fetching recent products:", error);
@@ -71,13 +106,22 @@ const MenuScreen = () => {
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
-    Promise.all([fetchCategories(), fetchRecentProducts()])
+    Promise.all([fetchCategories(), fetchRecentProducts(), loadFavorites()])
       .then(() => setRefreshing(false))
       .catch((error) => {
         console.error("Error refreshing data:", error);
         setRefreshing(false);
       });
   }, []);
+
+  const handleToggleFavorite = async (productId) => {
+    try {
+      const updatedFavorites = await toggleFavorite(productId);
+      setFavorites(updatedFavorites);
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+    }
+  };
 
   const renderCategory = ({ item }) => {
     const imageUrl = item.image ? `${API_URL}${item.image}` : null;
@@ -108,6 +152,7 @@ const MenuScreen = () => {
     const imageUrl = item.image ? `${API_URL}${item.image}` : null;
     const isImageLoading =
       imageLoadingStatus[`product_${item.id}`] !== "loaded";
+    const isFavorite = favorites.includes(item.id);
 
     return (
       <TouchableOpacity
@@ -152,6 +197,16 @@ const MenuScreen = () => {
               <MaterialIcons name="image" size={24} color="#c4c4c4" />
             </View>
           )}
+          <TouchableOpacity
+            style={styles.favoriteIcon}
+            onPress={() => handleToggleFavorite(item.id)}
+          >
+            <Ionicons
+              name={isFavorite ? "heart" : "heart-outline"}
+              size={16}
+              color={isFavorite ? "#ff6b6b" : "#4169e1"}
+            />
+          </TouchableOpacity>
         </View>
         <Text style={styles.recentProductName} numberOfLines={1}>
           {item.name}
@@ -178,7 +233,6 @@ const MenuScreen = () => {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
         >
-          {/* Header */}
           <LinearGradient colors={["#4169e1", "#1e3a8a"]} style={styles.header}>
             <Text style={styles.headerTitle}>Discover</Text>
             <Text style={styles.headerSubtitle}>
@@ -186,7 +240,6 @@ const MenuScreen = () => {
             </Text>
           </LinearGradient>
 
-          {/* Search input */}
           <View style={styles.searchInputContainer}>
             <SearchInput
               placeholder="Search Products"
@@ -195,7 +248,6 @@ const MenuScreen = () => {
             />
           </View>
 
-          {/* Categories section */}
           <View style={styles.sectionContainer}>
             <View style={styles.sectionTitleContainer}>
               <Text style={styles.sectionTitle}>Categories</Text>
@@ -218,7 +270,6 @@ const MenuScreen = () => {
             )}
           </View>
 
-          {/* Recent Products section */}
           <View style={styles.sectionContainer}>
             <View style={styles.sectionTitleContainer}>
               <Text style={styles.sectionTitle}>Recently Added</Text>
@@ -300,10 +351,10 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   categoryCard: {
-    width: 120,
-    height: 120,
+    width: 100,
+    height: 100,
     marginRight: 10,
-    borderRadius: 60,
+    borderRadius: 50,
     overflow: "hidden",
   },
   categoryImage: {
@@ -349,6 +400,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
   },
   recentProductImageContainer: {
     width: "100%",
@@ -386,6 +439,14 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.3)",
     justifyContent: "center",
     alignItems: "center",
+  },
+  favoriteIcon: {
+    position: "absolute",
+    top: 5,
+    right: 5,
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    borderRadius: 15,
+    padding: 1,
   },
 });
 
