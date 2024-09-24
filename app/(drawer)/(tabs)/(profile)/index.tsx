@@ -37,6 +37,7 @@ const ProfileScreen = () => {
           },
         });
         setUserData(response.data);
+        // console.log("USer", response.data);
       } catch (error) {
         console.error("Error fetching user profile:", error);
         // Handle error (e.g., show error message to user)
@@ -50,6 +51,8 @@ const ProfileScreen = () => {
       fetchUserData();
     }, [fetchUserData])
   );
+
+  // console.log("USer", user);
 
   const handleLogout = async () => {
     await logoutUser();
@@ -127,7 +130,7 @@ const ProfileScreen = () => {
         </View>
 
         <View style={styles.optionsContainer}>
-          {user && user.role === "admin" && (
+          {userData.role === "admin" && (
             <TouchableOpacity
               style={styles.optionItem}
               onPress={() =>
