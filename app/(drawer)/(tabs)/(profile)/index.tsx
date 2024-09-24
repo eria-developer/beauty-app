@@ -140,7 +140,7 @@ const ProfileScreen = () => {
           )}
           <TouchableOpacity
             style={styles.optionItem}
-            onPress={() => handleNavigation("/(drawer)/favorite-services")}
+            onPress={() => handleNavigation("/(drawer)/(tabs)/favorites")}
           >
             <Ionicons name="heart" size={24} color="#4169e1" />
             <Text style={styles.optionText}>Favorites</Text>
@@ -156,14 +156,18 @@ const ProfileScreen = () => {
           </TouchableOpacity> */}
           <TouchableOpacity
             style={styles.optionItem}
-            onPress={() => handleNavigation("/(drawer)/notifications")}
+            onPress={() =>
+              handleNavigation("/(drawer)/(tabs)/(profile)/notifications")
+            }
           >
             <Ionicons name="notifications" size={24} color="#4169e1" />
             <Text style={styles.optionText}>Notifications</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.optionItem}
-            onPress={() => handleNavigation("/(drawer)/settings")}
+            onPress={() =>
+              handleNavigation("/(drawer)/(tabs)/(profile)/settings")
+            }
           >
             <Ionicons name="settings" size={24} color="#4169e1" />
             <Text style={styles.optionText}>Settings</Text>

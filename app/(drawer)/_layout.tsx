@@ -75,11 +75,6 @@ const CustomDrawerContent = (props: any) => {
         icon={<Ionicons name="heart-outline" size={16} />}
         pathName="wishlist"
       />
-      <CustomDrawerItem
-        label="Settings"
-        icon={<Ionicons name="settings-outline" size={16} />}
-        pathName="settings"
-      />
     </DrawerContentScrollView>
   );
 };
@@ -101,7 +96,7 @@ const DrawerLayout = () => {
         headerTitleAlign: "center",
       }}
     >
-      <Drawer.Screen
+      {/* <Drawer.Screen
         name="notifications"
         options={{
           headerShown: true,
@@ -114,14 +109,14 @@ const DrawerLayout = () => {
             </View>
           ),
         }}
-      />
-      <Drawer.Screen name="featured-products" options={{ headerShown: true }} />
+      /> */}
+      {/* <Drawer.Screen name="featured-products" options={{ headerShown: true }} /> */}
       <Drawer.Screen name="(my-account)" options={{ headerShown: false }} />
       <Drawer.Screen
         name="order-history"
         options={{ headerShown: true, title: "ORDER HISTORY" }}
       />
-      <Drawer.Screen name="settings" options={{ headerShown: true }} />
+      {/* <Drawer.Screen name="settings" options={{ headerShown: true }} /> */}
       <Drawer.Screen
         name="wishlist"
         options={{ headerShown: true, title: "WISHLIST" }}

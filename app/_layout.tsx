@@ -37,6 +37,7 @@ export default function RootLayout() {
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <AuthProvider>
         <Stack
+          initialRouteName="(drawer)/(tabs)/home"
           screenOptions={{
             headerStyle: {
               backgroundColor: Colors.light.primary,
