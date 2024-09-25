@@ -124,7 +124,7 @@ const ProductDetailScreen = () => {
         />
         <View style={styles.detailsContainer}>
           <Text style={styles.productName}>{product.name}</Text>
-          <Text style={styles.productPrice}>${product.price}</Text>
+          <Text style={styles.productPrice}>ugx. {product.price}</Text>
           <Text style={styles.productDescription}>{product.description}</Text>
           {seller && (
             <Text style={styles.sellerInfo}>

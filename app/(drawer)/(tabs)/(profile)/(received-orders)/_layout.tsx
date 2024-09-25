@@ -20,17 +20,15 @@ const _layout = () => {
           title: "RECEIVED ORDERS",
         }}
       />
-      {/* <Stack.Screen
-        name="order-details"
+      <Stack.Screen
+        name="order-details/[id]"
         options={{
           headerShown: true,
           title: "Order Details",
         }}
-      /> */}
+      />
     </Stack>
   );
 };
 
 export default _layout;
-
-const styles = StyleSheet.create({});

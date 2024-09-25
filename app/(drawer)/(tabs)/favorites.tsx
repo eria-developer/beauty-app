@@ -93,7 +93,7 @@ const FavoriteScreen = () => {
             <Text style={styles.itemName} numberOfLines={2}>
               {item.name}
             </Text>
-            <Text style={styles.itemPrice}>${item.price}</Text>
+            <Text style={styles.itemPrice}>ugx. {item.price}</Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity

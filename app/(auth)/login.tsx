@@ -38,10 +38,12 @@ const LoginScreen = () => {
         await saveUserData({
           id: response.data.id,
           email: response.data.email,
+          role: response.data.role,
           full_name: response.data.full_name,
           access_token: response.data.access_token, // Make sure this matches the API response
           refresh_token: response.data.refresh_token, // Make sure this matches the API response
         });
+        console.log("Logged in user", response.data);
         showToast("success", "Success", "Logged in successfully!");
         router.push("/(drawer)/(tabs)/home");
       } else {

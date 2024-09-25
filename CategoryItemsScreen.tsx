@@ -49,7 +49,7 @@ const CategoryItemsScreen = () => {
       <Image source={{ uri: item.image }} style={styles.itemImage} />
       <View style={styles.itemInfo}>
         <Text style={styles.itemName}>{item.name}</Text>
-        <Text style={styles.itemPrice}>${item.price}</Text>
+        <Text style={styles.itemPrice}>ugx. {item.price}</Text>
       </View>
     </TouchableOpacity>
   );

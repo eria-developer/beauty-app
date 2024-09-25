@@ -211,7 +211,7 @@ const MenuScreen = () => {
         <Text style={styles.recentProductName} numberOfLines={1}>
           {item.name}
         </Text>
-        <Text style={styles.recentProductPrice}>${item.price}</Text>
+        <Text style={styles.recentProductPrice}>ugx. {item.price}</Text>
       </TouchableOpacity>
     );
   };
@@ -351,8 +351,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   categoryCard: {
-    width: 100,
-    height: 100,
+    width: 70,
+    height: 70,
     marginRight: 10,
     borderRadius: 50,
     overflow: "hidden",

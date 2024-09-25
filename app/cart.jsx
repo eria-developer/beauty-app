@@ -72,7 +72,7 @@ const CartScreen = () => {
   const renderCartItem = ({ item }) => (
     <View style={styles.cartItem}>
       <Text style={styles.productName}>{item.product.name}</Text>
-      <Text style={styles.productPrice}>${item.product.price}</Text>
+      <Text style={styles.productPrice}>ugx. {item.product.price}</Text>
 
       <View style={styles.quantityContainer}>
         <Text style={styles.quantityLabel}>Quantity:</Text>
@@ -138,7 +138,7 @@ const CartScreen = () => {
       />
 
       <View style={styles.totalContainer}>
-        <Text style={styles.totalText}>Total: ${total}</Text>
+        <Text style={styles.totalText}>Total: ugx. {total}</Text>
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={[styles.button, styles.homeButton]}
