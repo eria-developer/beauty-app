@@ -6,6 +6,7 @@ import {
   FlatList,
   TouchableOpacity,
   Alert,
+  TextInput,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
@@ -19,12 +20,16 @@ const CheckoutScreen = () => {
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  const [loyaltyPoints, setLoyaltyPoints] = useState(0);
+  const [redeemPoints, setRedeemPoints] = useState(0);
+  const [userProfile, setUserProfile] = useState(null);
 
   const router = useRouter();
 
   useEffect(() => {
     fetchCartItems();
     checkLoginStatus();
+    fetchUserProfile();
   }, []);
 
   const checkLoginStatus = async () => {
@@ -32,30 +37,50 @@ const CheckoutScreen = () => {
     setIsUserLoggedIn(loggedIn);
   };
 
+  const fetchUserProfile = async () => {
+    try {
+      const token = await getAccessToken();
+      const response = await axios.get(`${API_URL}/accounts/profile/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUserProfile(response.data);
+      setLoyaltyPoints(response.data.loyalty_points);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  };
+
   const fetchCartItems = async () => {
     try {
       const cart = await AsyncStorage.getItem("cart");
       const parsedCart = cart ? JSON.parse(cart) : [];
       setCartItems(parsedCart);
-      calculateTotal(parsedCart);
+      calculateTotal(parsedCart, 0);
     } catch (error) {
       console.error("Error fetching cart items:", error);
     }
   };
 
-  const calculateTotal = (cart) => {
+  const calculateTotal = (cart, pointsToRedeem) => {
     const totalPrice = cart.reduce(
       (sum, item) => sum + item.product.price * item.quantity,
       0
     );
-    setTotal(totalPrice.toFixed(2));
+    const discountFromPoints = pointsToRedeem * 0.01; // Assuming 1 point = 0.01 currency
+    const finalTotal = Math.max(totalPrice - discountFromPoints, 0);
+    setTotal(finalTotal.toFixed(2));
+  };
+
+  const handleRedeemPointsChange = (points) => {
+    const pointsToRedeem = Math.min(points, loyaltyPoints);
+    setRedeemPoints(pointsToRedeem);
+    calculateTotal(cartItems, pointsToRedeem);
   };
 
   const handleCheckout = async () => {
     setIsLoading(true);
     try {
       if (!isUserLoggedIn) {
-        // Alert.alert("Error", "You need to be logged in to checkout.");
         showToast("error", "Error", "You need to be logged in to checkout.");
         router.push("/(auth)/login");
         return;
@@ -69,13 +94,27 @@ const CheckoutScreen = () => {
 
       const response = await axios.post(
         `${API_URL}/products/checkout/`,
-        { items: orderItems },
+        {
+          items: orderItems,
+          redeemed_points: redeemPoints,
+        },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
 
       if (response.status === 201) {
+        // Redeem loyalty points
+        if (redeemPoints > 0) {
+          await axios.post(
+            `${API_URL}/products/redeem-loyalty-points/`,
+            { points: redeemPoints },
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+        }
+
         await AsyncStorage.removeItem("cart");
         setCartItems([]);
         setTotal(0);
@@ -88,10 +127,6 @@ const CheckoutScreen = () => {
       }
     } catch (error) {
       console.error("Checkout error:", error);
-      //   Alert.alert(
-      // "Error",
-      // "There was a problem processing your order. Please try again."
-      //   );
       showToast(
         "error",
         "Error",
@@ -130,6 +165,22 @@ const CheckoutScreen = () => {
 
       <View style={styles.totalContainer}>
         <Text style={styles.totalText}>Total: ugx. {total}</Text>
+
+        <View style={styles.loyaltyPointsContainer}>
+          <Text style={styles.loyaltyPointsText}>
+            Available Loyalty Points: {loyaltyPoints}
+          </Text>
+          <TextInput
+            style={styles.loyaltyPointsInput}
+            placeholder="Redeem Points"
+            keyboardType="numeric"
+            value={redeemPoints.toString()}
+            onChangeText={(text) =>
+              handleRedeemPointsChange(parseInt(text) || 0)
+            }
+          />
+        </View>
+
         <TouchableOpacity
           style={styles.checkoutButton}
           onPress={handleCheckout}
@@ -206,6 +257,21 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     color: "#888",
+  },
+  loyaltyPointsContainer: {
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  loyaltyPointsText: {
+    fontSize: 16,
+    marginBottom: 5,
+  },
+  loyaltyPointsInput: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    padding: 10,
+    fontSize: 16,
   },
 });
 
