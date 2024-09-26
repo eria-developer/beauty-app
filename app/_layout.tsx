@@ -58,6 +58,10 @@ export default function RootLayout() {
             name="checkout"
             options={{ headerShown: true, title: "CHECKOUT" }}
           />
+          <Stack.Screen
+            name="payment-details"
+            options={{ headerShown: true, title: "PAYMENT DETAILS" }}
+          />
           <Stack.Screen name="+not-found" />
         </Stack>
         <Toast config={toastConfig} />
