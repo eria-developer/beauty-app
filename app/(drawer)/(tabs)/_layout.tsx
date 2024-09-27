@@ -47,9 +47,9 @@ export default function TabLayout() {
           title: "Menu",
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
-            <MaterialCommunityIcons
-              name="food-fork-drink"
-              size={24}
+            <Ionicons
+              name={focused ? "cut" : "cut-outline"}
+              size={28}
               color={color}
             />
           ),
